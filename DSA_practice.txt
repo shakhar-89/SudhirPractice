@@ -1,0 +1,2241 @@
+### Prepare these questions in 2-3 days before any good interview in which basic DSA expetise is expected.
+
+## Array
+1. contiguous subarrary with maximum sum - Kadanes Algo
+
+  int maxsum=0;
+  int sum=0;
+   for (int i=0;i<n;i++)
+   {
+		sum+=arr[i];
+		if(sum>maxsum) maxsum=sum;
+        if(sum<=0) sum=0;		
+   }
+  
+2. Re-arrange(arr[i]->arr[arr[i]]) array with space O(1).
+
+   array elemtns between 0 to n-1;
+   //to keep arr[i] and arr[arr[i]] at ith index without additional space
+   //(arr[arr[i]] % n) will give original arr[i] becuase it has been already updated 
+    modify array : arr[i]=arr[i]+(arr[arr[i]] % n) * n
+   // arr[i] / n gives updated value[arr[arr[i]]] 
+	print array : arr[i] / n
+	
+3. Nuts and bolts problem 
+
+solution : 
+int search(char nuts[],int n,char c){
+    for (int i=0;i<n;i++){
+        if(nuts[i]==c)
+         {
+             return i;
+         }
+    }
+    return -1;
+}
+        
+class Solution{
+public:	
+
+	void matchPairs(char nuts[], char bolts[], int n) {
+	    int i_n,i_b,count=0;
+	    char input[]={'!','#','$','%','&','*','@','^','~'};
+	    char temp;
+
+	    for (int i=0;i<9;i++){
+	        i_n=search(nuts,n,input[i]);
+	        i_b=search(bolts,n,input[i]);
+	     
+	       if ( (i_n!=-1) and (i_b!=-1)){
+	           
+	            temp=nuts[count];
+	            nuts[count]=nuts[i_n];
+	            nuts[i_n]=temp;
+	            
+	            temp=bolts[count];
+	            bolts[count]=bolts[i_b];
+	            bolts[i_b]=temp;
+	            count++;
+	        }
+	    }	    
+	}
+
+};
+
+4. Count total set bits // bitwise operator
+
+    int countSetBits(int n)
+    {
+        n++;
+        int count=0;
+        int number_of_bits=log2(n)+1;
+        
+        for (int i=0;i<number_of_bits;i++)
+            {
+                int x=pow(2,i+1);
+               count+=((n/x)*(x/2));
+                
+            int remainder = n%x;
+            //If the count of pairs is odd then we add the remaining 1s 
+            //which could not be grouped together. 
+            if(remainder > x/2)
+                count += remainder - x/2;
+            }
+            return count;
+    }
+	
+5. count 0s
+
+int firstZero(int arr[], int low, int high) {
+        if (high >= low) {
+            int mid = low + (high - low) / 2;
+
+            // Check if mid element is first 0
+            if ((mid == 0 || arr[mid - 1] == 1) && arr[mid] == 0) 
+                return mid;
+
+            // If mid element is not 0
+            if (arr[mid] == 1) 
+                return firstZero(arr, (mid + 1), high);
+
+            // If mid element is 0, but not first 0
+            else
+                return firstZero(arr, low, (mid - 1));
+        }
+        return -1;
+    }
+
+    int countZeroes(int arr[], int n) {
+        // Find index of first zero in given array
+        int first = firstZero(arr, 0, n - 1);
+
+        // If 0 is not present at all, return 0
+        if (first == -1) 
+            return 0;
+
+        return (n - first);
+    }
+	
+6. k largest elements
+
+//my approach  
+ bool search(int arr[],int low,int high,int key){
+       if(high>=low){
+           int mid=low+(high-low)/2;
+           if (arr[mid]==key) return false;
+            
+           if (arr[mid]>key) return search(arr,mid+1,high,key);
+           else return search(arr,low,mid-1,key);
+       }
+        
+       return true;
+   }
+   
+	vector<int> kLargest(int arr[], int n, int k) {
+	   //code here
+	   int res[k];
+	   int count=0;
+	    
+	  // int test[]={5,4,3,2,1};
+	    
+	  // cout << search(test,0,4,7);
+	    
+	    while(k--){
+	        int max=-1;
+	        for (int i=0;i<n;i++){
+	            if (arr[i]>max && search(res,0,count,arr[i])){
+	                max=arr[i];
+	            }
+	        }
+	        res[count]=max;
+	        count++;
+	    }
+	    
+	    vector<int> ans;
+	    for(int i=0;i<count;i++) {
+	        ans.push_back(res[i]);
+	    }
+	    return ans;
+	}
+	
+//gfg solu
+	vector<int> kLargest(int arr[], int n, int k) {
+	    priority_queue<int, vector<int>, greater<int>> pq;
+	    for (int i = 0; i < n; i++) {
+	        if (pq.size() == k) {
+	            if (pq.top() < arr[i]) {
+	                pq.pop();
+	                pq.push(arr[i]);
+	            }
+	        } else {
+	            pq.push(arr[i]);
+	        }
+	    }
+	    vector<int> ans;
+	    while (!pq.empty()) {
+	        ans.push_back(pq.top());
+	        pq.pop();
+	    }
+	    reverse(ans.begin(), ans.end());
+	    return ans;
+	}
+
+7. https://www.interviewbit.com/old/problems/remove-duplicates-from-sorted-array/
+
+int removeDuplicates(int* A, int n1) {
+    
+    if (n1==0 || n1==1)
+        {
+            return n1;
+        }
+        
+    int count=1;
+    int res[n1];
+    int i,j;
+    
+    for (i=1;i<n1;i++)
+    {
+        if (A[i-1] != A[i]){
+            A[count++]=A[i];
+        }
+    }
+    return count;
+}
+
+
+8. https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/submissions/
+ /**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+
+int* twoSum(int* numbers, int numbersSize, int target, int* returnSize){
+   returnSize=(int*) malloc(2 * sizeof(int));
+      int i=0; int j=numbersSize-1;
+    while (i<j){
+        if ((numbers[i] + numbers[j])==target){
+                  returnSize[0]=i+1;
+                  returnSize[1]=j+1;
+                  break;
+            }
+        else if ((numbers[i] + numbers[j])>target){
+                j--;
+            }
+        else {
+            i++;
+        }
+    }
+    return returnSize;
+}
+
+9. water trapping problem
+
+---O(n2)
+    long long trappingWater(int arr[], int n){
+        // code here
+        int sum=0;
+        int left=0,right=0;
+        //for every arr[i]
+            //find left maximum , find right maximum
+            //water stored at arr[i] = min(left,right) - arr[i]
+        for (int i=1;i<n-1;i++){
+            left=arr[i];
+            for (int j=0;j<i;j++){
+                left=max(left,arr[j]);
+            }
+            right=arr[i];
+            for (int j=i+1;j<n;j++){
+                right=max(right,arr[j]);
+            }
+            sum=sum+(min(left,right) - arr[i]);
+        }
+        return sum;
+    }	
+
+---O(n)
+    long long trappingWater(int arr[], int n){
+        // code here
+        long long sum=0;
+        vector<int> left(n, 0); // int left[n];
+        vector<int> right(n, 0); // int right[n];
+        left[0]=arr[0];
+        right[n-1]=arr[n-1];
+        //for every arr[i]
+        //find left maximum array
+        //find right maximum
+        //water stored at arr[i] = min(left,right) - arr[i]
+        for (int i=1;i<n;i++){
+            left[i]=max(left[i-1],arr[i]);
+        }
+        for (int i=n-2;i>=0;i--){
+            right[i]=max(right[i+1],arr[i]);
+        }
+        for (int i=0;i<n;i++){
+            sum+=max(0,(min(left[i],right[i]) - arr[i]));
+        }
+        return sum;
+    }
+
+
+10. Replace all 0 digits with 5
+
+int convertFive(int n) {
+    // Your code here
+    int k=n;
+    int res=0;
+    
+    int i=0;
+    
+    while (k>0){
+        if (k%10!=0){
+            res=res+(k%10)*pow(10,i);
+        }
+        else {
+            res=res+5*pow(10,i);
+        }
+        i++;
+        k=k/10;
+    }
+    
+    return res;
+}
+
+11. Implement two stacks out of an array
+
+void twoStacks :: push1(int x)
+{
+    if (top1 < top2 -1){
+        top1++;
+        arr[top1]=x;
+    }
+}
+   
+//Function to push an integer into the stack2.
+void twoStacks ::push2(int x)
+{
+    if (top1 < top2 -1){
+        top2--;
+        arr[top2]=x;
+    }
+}
+   
+//Function to remove an element from top of the stack1.
+int twoStacks ::pop1()
+{
+    if (top1 >= 0) {
+        int x=arr[top1];
+        top1--;
+        return x;
+    }
+    else return -1;
+}
+
+//Function to remove an element from top of the stack2.
+int twoStacks :: pop2()
+{
+    if (top2 < size){
+        int x=arr[top2];
+        top2++;
+        return x;
+    }
+    else return -1;
+}
+
+12. Leaders in array[every elements to the right of leader are smaller than leader]
+   vector<int> leaders(int a[], int n){
+        // Code here
+        vector<int> v;
+        int right[n];
+        right[n-1]=a[n-1];
+        for (int i=n-2;i>=0;i--){
+            right[i]=max(a[i],right[i+1]);
+        }
+        for (int i=0;i<n;i++){
+            if (right[i]==a[i]){
+                v.push_back(a[i]);
+            }
+        }
+       // reverse(v.begin(), v.end());
+        return v;
+    }
+
+13. Reverse array in groups
+
+https://practice.geeksforgeeks.org/problems/reverse-array-in-groups0255/1#
+
+    void reverseInGroups(vector<long long>& arr, int n, int k){
+        // code here
+        int temp=0,f,l;
+        for (int i=0;i<n;i=i+k){
+            f=i;l=i+(k-1);
+            if (l>n-1){l=n-1;}
+            
+            while(f<l){
+            temp=arr[f];
+            arr[f]=arr[l];
+            arr[l]=temp;
+            f++;l--;
+            }
+        }
+    }
+
+GFG solution :
+
+    void reverseInGroups(vector<long long>& arr, int n, int k){
+        for(long long i = 0;i<n;i+=k){ 
+            
+            //If (ith index +k) is less than total number of elements it means
+            //k elements exist from current index so we reverse k elements 
+            //starting from current index.
+            if(i+k < n){ 
+                //reverse function used to reverse any part of the array.
+                reverse(arr.begin()+i, arr.begin()+(i+k));
+            }
+            
+            //Else k elements from current index doesn't exist. 
+            //In that case we just reverse the remaining elements.
+            else{
+                //reverse function used to reverse any part of the array.
+                reverse(arr.begin()+i, arr.end());
+            }
+        }
+    }
+
+
+14.Rearrange Array Alternately
+
+Input : 1,2,3,4,5,6 output:6,15,2,4,3
+
+https://practice.geeksforgeeks.org/problems/-rearrange-array-alternately-1587115620/1#
+
+—O(n^2)
+   void rearrange(long long *arr, int n) 
+    { 
+    	
+    	// Your code here
+    	for (int i=0;i<n;i=i+2){
+    	    int temp=arr[n-1];
+    	    for (int j=n-1;j>i;j--){
+    	        arr[j]=arr[j-1];
+    	    }
+    	    arr[i]=temp;
+    	}
+    }
+
+—O(n)
+
+    void rearrange(long long *arr, int n) 
+    { 
+    	
+    	// Your code here
+    	int max_id=n-1;
+    	int min_id=0;
+    	int max_elem=arr[n-1]+1;
+    	for (int i=0;i<n;i++){
+    	    if (i%2==0){
+    	        //At even index store maximum numbers in decreasing order
+    	        arr[i]=arr[i]+(arr[max_id]%max_elem)*max_elem;
+    	        max_id--;
+    	    }
+    	    else {
+    	         //At odd index store  minimum number is increasing order
+    	        arr[i]=arr[i]+(arr[min_id]%max_elem)*max_elem;
+    	        min_id++;
+    	    }
+    	}
+    	
+       for (int i=0;i<n;i++){
+           arr[i]=arr[i]/max_elem;
+       }
+    }
+
+—O(n) and O(n) - size ,,with segmentation fault
+
+  void rearrange(long long *arr, int n) 
+    { 
+    	
+    	// Your code here
+    	int max_id=n-1;
+    	int min_id=0;
+    	long long res[n];
+    	for (int i=0;i<n;i++){
+    	    if (i%2==0){
+    	        //At even index store maximum numbers in decreasing order
+    	        res[i]=arr[max_id];
+    	        max_id--;
+    	    }
+    	    else {
+    	         //At odd index store  minimum number is increasing order
+    	         res[i]=arr[min_id];
+    	         min_id++;
+    	    }
+    	}
+    	
+       for (int j=0;j<n;j++){
+           arr[j]=res[j];
+           //cout << res[j] <<"\t";
+       }
+    }
+
+15. Stock span problem
+
+https://practice.geeksforgeeks.org/problems/stock-span-problem-1587115621/1# 
+
+—O(n^2)
+   vector <int> calculateSpan(int price[], int n)
+    {
+       // Your code here
+       vector <int> res;
+       for (int i=0;i<n;i++){
+           int count=0;
+           for (int j=0;j<=i;j++){
+               if(price[j]<=price[i]){
+                   count++;
+               }
+               else count=0;
+           }
+           res.push_back(count);
+       }
+       return res;
+       
+     // for ()
+    }
+
+—O(n)
+   //Function to calculate the span of stockâ€™s price for all n days. 
+    vector <int> calculateSpan(int *price, int n)
+    {
+        stack<int> s;
+        s.push(0);
+        vector <int> S (n);
+        
+        //span value of first day is always 1. 
+        S[0] =1;
+        
+        for(int i=1;i<n;i++)
+        {
+            //we pop elements from the stack till price at top of stack 
+            //is less than or equal to current price.
+            while(s.empty()==false and price[s.top()] <= price[i])
+                s.pop();
+            
+            //if stack becomes empty, then price[i] is greater than all 
+            //elements on left of it in list so span is i+1.
+            //Else price[i] is greater than elements after value at top of stack.
+            int span = (s.empty()) ? (i+1) : (i-s.top());
+            S[i] = span;
+            
+            //pushing this element to stack.
+            s.push(i);
+       	}
+       	//returning the list.
+       	return S;
+    }
+
+
+16. Minimum Swaps to Sort
+
+https://practice.geeksforgeeks.org/problems/minimum-swaps/1 
+
+—O(n)
+
+    //Function to find the minimum number of swaps required to sort the array. 
+	int minSwaps(vector<int>&nums)
+	{
+		int n = nums.size();
+		
+		//creating a list of pairs where first element of pair is array 
+        //element and second element is its position.
+		vector<pair<int,int>>cur(n);
+		
+		//iterating over the array elements.
+		for(int i = 0; i < n; i++)
+		{
+		    //storing the elements and their position as pair in the list.
+			cur[i].first = nums[i];
+			cur[i].second = i;
+		}
+		//sorting the list.
+		sort(cur.begin(), cur.end());
+		
+		//using boolean list to mark visited elements and currently 
+        //marking all the nodes as false.
+		vector<bool>vis(n, false);
+		int ans = 0;
+		
+		for(int i = 0; i < n; i++)
+		{
+		    //if element is already visited or it is already at
+		    //correct position, we continue the loop.
+			if(vis[i] or cur[i].second == i)
+				continue;
+			int cycle_size = 0;
+			int j = i;
+			
+			//while element is not visited, we find out the number of nodes in
+            //this cycle and keep incrementing cycle size.
+			while(!vis[j]){
+				vis[j] = true;
+				j = cur[j].second;
+				cycle_size++;
+			}
+			//updating number of swaps required.
+			ans += (cycle_size > 1) ? cycle_size - 1 : 0; 
+		}
+		return ans;
+	}
+
+17. https://leetcode.com/problems/word-search/ 
+
+18. https://www.hackerrank.com/contests/launchpad-1-winter-challenge/challenges/shift-plates/problem 
+
+19. Reverse a linked list - iterative method
+20. Reverse a linked list - Recursion
+21. Print 2-D array in spiral oder
+22. How many times is a sorted array rotated(application of binary search) ..1,2,3,4,5 —3,4,5,1,2 — 2,3,4,5,1
+ — mid < mid+1 && mid < mid-1 return mid
+ — if a[0] < a[mid] BST(mid+1,n)
+ — if a[0] > a[mid] BST(0,mid-1) 
+23. Search element in a circular sorted array(application of binary search)
+ — mid ==x return mid
+ — if a[0]< x < a[mid] BST(0,mid-1)
+ — if a[n] >x > a[mid] BST(mid+1,n)
+
+24. Index of an extra element 
+Input:
+N = 7
+A[] = {2,4,6,8,9,10,12}
+B[] = {2,4,6,8,10,12}
+Output: 4
+
+https://practice.geeksforgeeks.org/problems/index-of-an-extra-element/1/?category[]=Arrays&category[]=Arrays&page=3&query=category[]Arrayspage3category[]Arrays# 
+
+  int findExtra(int a[], int b[], int n) {
+        // add code here.
+        int low=0,high=n-1,result=n-1;
+        while (low<high){
+        int mid=low + (high-low)/2;
+        if (a[mid]!=b[mid]){
+            result=mid;
+            high=mid;
+           // cout << "if block"<<"\n";
+        }
+        else{
+            low=mid+1;
+           // cout << "else block"<<"\n";
+            }
+        }
+       
+      return result; 
+    }
+
+25. https://practice.geeksforgeeks.org/problems/find-the-element-that-appears-once-in-sorted-array0624/1 
+
+    int findOnce(int arr[], int n)
+    {
+        //code here.
+        int low=0,high=n-1;
+        if (n==1) return arr[0];
+        int result=n-1;
+        
+        while(low<high){
+            
+            int mid=low+(high-low)/2;
+            
+            if(arr[mid]!=arr[mid-1] && arr[mid]!=arr[mid+1]){
+                result=mid;
+                break;
+            }
+            else if (arr[mid]==arr[mid-1] && mid%2!=0){
+                low=mid+1;
+            }
+            else if (arr[mid]==arr[mid-1] && mid%2==0){
+                high=mid;
+            }
+            else if (arr[mid]==arr[mid+1] && (mid+1)%2!=0){
+                low=mid+2;
+            }
+            else{high=mid;}
+        }
+    return arr[result];
+    
+    }
+
+
+26. Same question as above, except that given array is not sorted. [Try after going through Bitwise operators ] 
+    1. sample input: 3 5 1 7 1 3 6 5 7,  Output: 6
+
+
+27. https://leetcode.com/problems/subarray-sum-equals-k/solution/ 
+    1.  [without hashmap: O(n^2) time and O(1) space, with hashmap: O(n) time and O(n) space]
+
+28.  Frequencies of Limited Range Array Elements
+Input:
+N = 5
+arr[] = {2, 3, 2, 3, 5}
+P = 5
+Output:
+0 2 2 0 1
+Explanation: 
+Counting frequencies of each array element
+We have:
+1 occurring 0 times.
+2 occurring 2 times.
+3 occurring 2 times.
+4 occurring 0 times.
+5 occurring 1 time.
+
+https://practice.geeksforgeeks.org/problems/frequency-of-array-elements-1587115620/1/?category[]=Arrays&category[]=Arrays&page=5&query=category[]Arrayspage5category[]Arrays# 
+   void frequencyCount(vector<int>& arr,int N, int P)
+    { 
+        // code here
+      //  int maxi=max(N,P);
+     //    maxi=maxi+1;
+     //   int res[maxi]={0};
+        
+        for (int i=0;i<N;i++){
+            arr[i]=arr[i]-1;
+        }
+        
+       //P<=N
+        for (int i=0;i<N;i++){
+            arr[arr[i]%N]=arr[arr[i]%N]+N;
+        }
+        
+       // for (int i=0;i<N+1;i++){
+       //    cout << res[i] << "\t";
+        //}
+        
+        for (int i=0;i<N;i++){
+            arr[i]=arr[i]/N;
+        } 
+        
+        
+    }
+
+#### Mathematical
+
+29 . Number of digits in factorial.
+
+    int digitsInFactorial(int N)
+    {
+        // code here
+        double sum=0.0;
+        for (int i=1;i<=N;i++)
+        {
+            sum=sum+log10(i);
+        }
+        return floor(sum)+1;
+    }
+};
+
+30. If N is prime.
+        bool isPrime(int N)
+    {
+        //Your code here
+        if (N==1) return false;
+        if (N==2 || N==3) return true;
+        if (N%2==0 || N %3==0) return false;
+        for (int i = 5; i <= sqrt(N);i=i+6){
+            if (N%i==0 || N%(i+2)==0){
+                return false;
+            }
+        }
+        return true;
+    }
+
+31.   Count numbers <=N have Exactly 3 Divisors // such numbers are(<=N) and square of prime numbers. // Only square of prime numbers can have exactly 3 divisors , 1 , number itself and it’s prime square root 
+        bool isPrime(int N)
+    {
+        //Your code here
+        if (N==1) return false;
+        if (N==2 || N==3) return true;
+        if (N%2==0 || N %3==0) return false;
+        for (int i = 5; i <= sqrt(N);i=i+6){
+            if (N%i==0 || N%(i+2)==0){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    int exactly3Divisors(int N)
+    {
+        //Your code here
+        int count=0;
+        for (int i=1;i<=sqrt(N);i++){
+            if (isPrime(i) && i*i <=N){
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+32. The Lazy Caterer's Problem
+  
+Given an integer n, denoting the number of cuts that can be made on a pancake, find the maximum number of pieces that can be formed by making n cuts.
+NOTE: Cuts can't be horizontal.
+
+   	int maximum_Cuts(int n){
+   	    // Code here
+   	    return ((n*(n+1))/2)+1;
+   	}   
+
+33. Square root of a number
+
+Given an integer x, find the square root of x. If x is not a perfect square, then return floor(√x).
+
+long long int floorSqrt(long long int x) 
+{
+    // Your code goes here
+    if (x==1 || x==2 || x==3) return 1;
+    
+    long long int start=1;
+    long long int end=x;
+    long long int ans=0;
+    while(start<=end){
+        int mid=start+(end-start)/2;
+        
+        if ( mid <= x/mid ){ //avoid numeric overflows
+            ans=mid;
+            start=mid+1;
+        }
+        else { 
+            end=mid-1;
+            
+        }
+    }
+    return ans;
+    
+}
+
+
+34 Number of paths 
+The problem is to count all the possible paths from top left to bottom right of a MxN matrix with the constraints that from each cell you can either move to right or down.
+
+long long  numberOfPaths(int m, int n)
+{
+    // Code Here
+    if (m==1 || n==1){
+        return 1;
+    }
+    
+    return numberOfPaths(m-1,n) + numberOfPaths(m,n-1);
+}
+
+35 Reverse digits of a number
+
+		long long int reverse_digit(long long int n)
+		{
+		    // Code here
+		    long long int rev=0;
+		    while(n>0){
+		        rev=rev*10+(n%10);
+		        n=n/10;
+		    }
+		    return rev;
+		}
+
+36 . Squares in N*N Chessboard
+
+    long long squaresInChessBoard(long long N) {
+        // code here
+        if (N==1) return 1;
+        
+        return N*N + squaresInChessBoard(N-1);
+    }
+
+37 . Check if number is fibbonacci
+
+    int fibo(int N){
+        if (N==0) return 0;
+        
+        if (N==1 || N==2) return 1;
+        
+        return fibo(N-1)+fibo(N-2);
+    }
+    string checkFibonacci(int N){
+        // code here 
+        string ans="No";
+        for (int i=1;fibo(i)<=N;i++){
+            if (N==fibo(i)){
+                ans="Yes";
+                break;
+                
+            }
+        }
+        
+        return ans;
+        
+    }
+
+GFG:
+    // A utility function that returns true if x is perfect square
+    bool isPerfectSquare(int x)
+    {
+    	int s = sqrt(x);
+    	return (s*s == x);
+    }
+    
+    // Returns true if n is a Fibinacci Number, else false
+    bool isFibonacci(int n)
+    {
+    	// n is Fibinacci if one of 5*n*n + 4 or 5*n*n - 4 or both
+    	// is a perferct square
+    	return isPerfectSquare(5*n*n + 4) ||
+    		isPerfectSquare(5*n*n - 4);
+    }
+    
+    string checkFibonacci(int N){
+        
+        if(isFibonacci(N))
+            return "Yes";
+        else
+            return "No";
+        
+    }
+
+
+38.   Change all even bits in a number to 0
+
+    long long int convertEvenBitToZero(long long int n) {
+        // code here
+        return (n&0xaaaaaaaa);
+    }
+
+
+39. Palindrome numbers
+
+Check if the binary representation of a number is palindrome or not.
+
+    int isPallindrome(long long int N){
+        // code here
+        long long int temp=N;
+        vector <long long int> v;
+        vector <long long int> rv;
+        while (N>0){
+            v.push_back(N%2);
+            N=N/2;
+        }
+        rv=v;
+        reverse(v.begin(),v.end());
+        for (int i=0;i<=v.size()-1;i++){
+            if(v[i]!=rv[i]){
+               return 0;
+               break;
+            }
+        }
+        
+        return 1;
+    }
+
+
+40. Sieve of Eratosthenes
+Given a number N, calculate the prime numbers up to N using Sieve of Eratosthenes.  
+
+   vector<int> sieveOfEratosthenes(int N)
+    {
+        // Write Your Code here
+        vector <bool> isPrime(N+1,true);
+        vector <int> res;
+        
+        for (int i=2;i<=N;i++){
+            if(isPrime[i]){
+                res.push_back(i);
+                for(int j=i*i;j<=N;j=j+i){
+                    isPrime[j]=false;
+                }
+            }
+        }
+        
+    //    for (int i=2;i<=N;i++){
+           // cout << isPrime[i] << "\t";
+    //        if (isPrime[i]){
+    //            res.push_back(i);
+    //        }
+    //    }
+        
+        return res;
+    }
+
+
+41 . Trailing zeros in factorial
+
+    int trailingZeroes(int N)
+    {
+        // Write Your Code here
+        int count=0;
+        //trailing zeros in factorial = n/5 + n/25 + n/125 ... // every 5 adds one zero , every 25 adds one zero..
+        
+        for (int i=5;i<=N;i=i*5){
+            count=count+N/i;
+        }
+
+        return count;
+    }
+
+42. LCM And GCD
+
+   //euclidian algo
+   long long gcd(long long A, long long B){
+       if (B==0) return A;
+       return gcd(B,A%B);
+   }
+   
+    vector<long long> lcmAndGcd(long long A , long long B) {
+        // code here
+        vector <long long> res;
+        long long g=gcd(A,B);
+        
+        res.push_back((A*B)/g);
+        res.push_back(g);
+        
+        
+        return res;
+        
+    }
+
+43 . GCD of array
+
+Given an array of N positive integers, find GCD of all the array elements.
+
+	int euclid(int a , int b){
+	    if (b==0) return a;
+	    return euclid(b,a%b);
+	}
+	
+    int gcd(int N, int arr[])
+    {
+    	// Your code goes here
+    	int res=arr[0];
+    	
+    	for(int i=1;i<N;i++){
+    	    res=euclid(res,arr[i]);
+    	}
+    	return res;
+    }
+
+45. Repetitive additions of digits
+Given a non-negative integer N, repeatedly add all its digits until the result has only one digit.
+
+    long long sumofdigits(long long N){
+        long long sum=0;
+        while(N>0){
+            sum=sum+(N%10);
+            N=N/10;
+        }
+        
+        return sum;
+    }
+    
+    long long numberofdigits(long long N){
+        int count=0;
+        while(N>0){
+            count++;
+            N=N/10;
+        }
+        
+        return count;
+    }
+    
+    int singleDigit(long long N)
+    {
+        // Write Your Code here
+        long long sumDigits=sumofdigits(N);
+        
+        if(numberofdigits(sumDigits) ==1) return sumDigits;
+        
+        return singleDigit(sumDigits);
+        
+    }
+
+GFG:
+
+    int singleDigit(long long N)
+    {
+        int dig = N % 9;
+        int ans = dig ? dig : 9;
+        return ans;
+    }
+
+
+46. Count perfect squares less than N
+
+    int countSquares(int N) {
+        
+        int ans = sqrt(N-1);
+        
+        return ans;
+    }
+
+47. Print first n Fibonacci number
+
+    vector<long long> printFibb(int n) 
+    {
+        //code here
+        long long int a=0,b=1,c;
+        vector<long long> res;
+        res.push_back(1);
+        
+        for (int i=2;i<=n;i++){
+            c=a+b;
+            res.push_back(c);
+            a=b;
+            b=c;
+        }
+        return res;
+    }
+
+48 . Union of two arrays
+
+    int doUnion(int a[], int n, int b[], int m)  {
+        //code here
+        unordered_set<int> s;
+        for (int i=0;i<n;i++){
+            s.insert(a[i]);
+        }
+        
+        for(int j=0;j<m;j++){
+             s.insert(b[j]);
+        }
+        return s.size();
+    }
+
+49. Intersection of two arrays
+
+    // Function to return the count of the number of elements in
+    // the intersection of two arrays.
+    int NumberofElementsInIntersection(int a[], int b[], int n, int m) {
+        // Your code goes here
+        unordered_set<int> s;
+        int count=0;
+        
+        for(int i=0;i<n;i++){
+            s.insert(a[i]);
+        }
+        
+        for (int j=0;j<m;j++){
+            if(s.find(b[j])!=s.end()){
+                s.erase(b[j]); // to handle duplicate elements in b
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+50 . Container with maximum water
+
+Given N non-negative integers a1,a2,....an where each represents a point at coordinate (i, ai). N vertical lines are drawn such that the two endpoints of line i is at (i, ai) and (i,0). Find two lines, which together with x-axis forms a container, such that it contains the most water.
+
+Mine : O(n^2)
+long long maxArea(long long A[], int len)
+{
+    // Your code goes here
+    long long maxWater=0;
+    long long Water=0;
+    
+    for (int i=0;i<len;i++){
+        //cout << Water<<"\t"<< maxWater<<"\n";
+        for(int j=i;j<len;j++){
+            Water=min(A[i],A[j])*abs(j-i);
+          //  cout << Water<<"\t"<< maxWater<<"\n";
+            if (Water>maxWater){
+                maxWater=Water;
+            }
+        }
+    }
+    
+    return maxWater;
+}
+
+GFG:O(n)
+
+long long maxArea(long long A[], int len)
+{
+    // Your code goes here
+    long long maxWater=0;
+    long long p1=0,p2=len-1;
+    
+    while(p1<p2){
+        if(A[p1]<A[p2]){ // you want to reach to the maximum then discard lesser values and continue ahead with greater values.
+            maxWater=max(maxWater,A[p1]*(p2-p1));
+            p1++;
+        }
+        else {
+            maxWater=max(maxWater,A[p2]*(p2-p1));
+            p2--;
+        }
+    }
+    
+    return maxWater;
+}
+
+
+46 Lucky Numbers
+
+Lucky numbers are subset of integers. Rather than going into much theory, let us see the process of arriving at lucky numbers,
+Take the set of integers
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,……
+First, delete every second number, we get following reduced set.
+1, 3, 5, 7, 9, 11, 13, 15, 17, 19,…………
+Now, delete every third number, we get
+1, 3, 7, 9, 13, 15, 19,….….
+Continue this process indefinitely……
+Any number that does NOT get deleted due to above process is called “lucky”.
+
+Input:
+N = 5
+Output: 0
+Explanation: 5 is not a lucky number 
+as it gets deleted in the second 
+iteration.
+
+
+Solution :
+    bool check(int n,int counter){
+        if(counter<=n){
+            if (n%counter==0) return false;
+            n=n-n/counter;
+            counter++;
+            
+            return check(n,counter);
+        }
+        
+        else return true;
+    }
+    bool isLucky(int n) {
+        // code here
+            //initial positions of number is number itself
+    //after ith iteration
+    //int pos=n;
+    //int iteration=2;
+   // while (iteration < pos){
+   //     pos=pos-(pos/iteration);
+    //    iteration++;
+        
+   // }
+    //cout << pos << "\t"<< iteration <<"\n"; 
+   // if (pos==iteration) return false;
+    return check(n,2);
+    }
+
+
+47 Faithful numbers
+
+A number is called faithful if you can write it as the sum of distinct powers of 7. 
+e.g.,2457 = 7 + 72 + 74 . If we order all the faithful numbers, we get the sequence 1 = 70, 7 = 71, 8 = 70 + 71, 49 = 72, 50 = 70 + 72 . . . and so on.
+Given some value of N, you have to find the Nth faithful number.
+
+Input:
+N = 3
+Output:
+8
+Explanation:
+8 is the 3rd Faithful number.
+
+
+Solution :
+
+    vector<long long> toBin(int n){
+        vector <long long> res;
+        int pos=0;
+        while(n>0){
+            if (n%2==1)
+            {
+               res.push_back(pow(7,pos)); 
+            }
+            pos++;
+            n=n>>1;
+        }
+        
+        //reverse(res.begin(),res.end());
+        
+        return res;
+    } 
+    
+    long long nthFaithfulNum(int N) {
+        // code here
+        
+        vector<long long> bin;
+        
+        long long NthFFnum=0;
+        
+        bin=toBin(N);
+        
+        for (int i=0;i<bin.size();i++){
+                NthFFnum = NthFFnum + bin[i];
+        }
+        
+       // cout << "\n";
+        
+        return NthFFnum;
+    }
+
+
+48 .  Count the number of palindromic numbers less than N.
+
+    bool isPalindrom(int n){
+        int rev=0;
+        int temp=n;
+        while(n>0){
+            rev=rev*10+(n%10);
+            n=n/10;
+        }
+        
+        return (temp==rev);
+    }
+    
+    int palindromicNumbers(int N)
+    {
+        // Write Your Code here
+        int count=0;
+        for (int i=1;i<N;i++){
+            if (isPalindrom(i)){
+                count++;
+            }
+        }
+        
+        return count;
+    }
+
+
+49.   Check if a number can be expressed as x^y 
+
+Given a positive integer N, find if it can be expressed as xy where y > 1 and x > 0 and x and y both are both integers.
+
+    int intlog(double base, double x) {
+    return (int)(log(x) / log(base));
+    }
+    
+    int checkPower(int N){
+        // code here 
+        
+        //cout << intlog(3,N);
+        //cout << "\n";
+        
+        for (int i=1;i*i<=N;i++){
+            int log1=intlog(i,N);
+            
+            if (pow(i,log1)==N){
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+GFG:
+
+    int checkPower(int N){
+        // code here 
+        
+        //cout << intlog(3,N);
+        //cout << "\n";
+        
+        if (N==1) return 1;
+        
+        for (int i=2;i*i<=N;i++){
+             unsigned p=i;
+             
+             while (p<=N){
+                 p=p*i;
+                 if (p==N){
+                     return 1;
+                 }
+             }
+        }
+        return 0;
+    }
+
+50.  Shortest path from 1 to n 
+Consider a directed graph whose vertices are numbered from 1 to n. There is an edge from a vertex i to a vertex j iff either j = i + 1 or j = 3 * i. The task is to find the minimum number of edges in a path in G from vertex 1 to vertex n.
+
+Solution:
+
+    int minimumStep(int n){
+        //complete the function here
+        int ans=0;
+        while (n>1){
+            if(n%3==0){
+                ans++;
+                n=n/3;
+            }
+            else{
+                ans++;
+                n--;
+            }
+            
+        }
+        
+        return ans;
+    }
+
+51. Count ways to Nth Stair(Order does not matter)
+
+https://practice.geeksforgeeks.org/problems/count-ways-to-nth-stairorder-does-not-matter1322/1/?category[]=Mathematical&category[]=Mathematical&difficulty[]=1&page=1&query=category[]Mathematicaldifficulty[]1page1category[]Mathematical# 
+
+There are N stairs, and a person standing at the bottom wants to reach the top. The person can climb either 1 stair or 2 stairs at a time. Count the number of ways, the person can reach the top (order does not matter).
+Note: Order does not matter means for n=4 {1 2 1},{2 1 1},{1 1 2} are considered same.
+
+Solution :
+    long long countWays(int m)
+    {
+        // your code here
+        if (m==1) return 1;
+        if (m%2==0) return 1 + countWays(m-1);
+        else return countWays(m-1);
+    }
+
+GFG:
+   //Function to count number of ways to reach the nth stair 
+    //when order does not matter.
+    long long countWays(int m)
+    {
+        long long res[m + 1];
+        
+        //base cases
+        res[0] = 1;
+        res[1] = 1;
+        
+        //storing number of ways to reach the ith index as 
+        //number of ways to reach (i-2)th index +1.
+        for (int i = 2; i <= m; i++)  
+            res[i] = (res[i-2] + 1);
+        
+        //returning the result.
+        return res[m];
+
+    }
+
+52. Largest Prime Factor
+
+Given a number N, the task is to find the largest prime factor of that number.
+
+    long long int largestPrimeFactor(int N){
+        // code here
+        long long num=2;
+        
+        while(num*num<=N){
+            if(N%num==0){
+                N=N/num;
+            }else{
+                num++;
+            }
+        }
+        return N;
+    }
+
+### Bit Magic
+
+53. Count set bits in n : T : O(number of set bits)
+ int res=0;
+while(n>0){
+  n=n&(n-1); // unset rightmost set bit : 1000(8) & 0111(7) : 0000 , so in number of “set bits” iterations n will become 0 
+  res++;
+}
+
+54 . Check if n if power of 2  Truth : if n is power of 2 , only 1 bit will be set
+ bool power2(int n){
+ 	int res=0;
+	while(n>0){
+  		n=n&(n-1);  
+  		res++;
+	}
+	return (res==1);
+
+//bool power2(int n){
+	if (n==0) return false;
+	return ((n&n-1)==0);
+}
+
+//bool power2(int n){
+ 	return ((n!=0) &&  ((n&n-1)==0))
+}
+
+
+55.	Exceptionally odd
+Given an array of N positive integers where all numbers occur even number of times except one number which occurs odd number of times. Find the exceptional number.
+
+Input:
+N = 7
+Arr[] = {1, 2, 3, 2, 3, 1, 3}
+Output: 3
+
+// Time : O(n) , Auxspace : O(1) 
+    int getOddOccurrence(int arr[], int n) {
+        // code here
+        //Idea : x ^ x = 0 , so all the evenly counted numbers will cancle 
+        // each other if we simply XOR all the number; 
+        int res=0;
+        for (int i=0;i<n;i++){
+            res=res^arr[i];
+            
+        }
+        
+        return res;
+    }
+
+56. Two numbers with odd occurrences 
+
+https://practice.geeksforgeeks.org/problems/two-numbers-with-odd-occurrences5846/1#
+
+Given an unsorted array, arr[] of size N and that contains even number of occurrences for all numbers except two numbers. Find the two numbers in decreasing order which has odd occurrences.
+
+Example 1:
+
+Input:
+N = 8
+Arr = {4, 2, 4, 5, 2, 3, 3, 1}
+Output: {5, 1} 
+Explaination: 5 and 1 have odd occurrences.
+
+ vector<int> twoOddNum(int Arr[], int N)  
+    {
+        // code here
+        int XOR=0, res1=0,res2=0;
+        vector <int> x;
+        
+        //calculate xor of all the elements that is xor of two odd appearing number
+        for (int i=0;i<N;i++){
+            XOR=XOR ^ Arr[i];
+        }
+        
+        //find last set bit of XOR
+        // ex: XOR=8(1000), XOR-1 = 7(0111) , ~(XOR-1)=1000, XOR & ~(XOR-1)=1000
+        int ns=XOR & ~(XOR-1);
+        
+        // Separate numbers in two groups 
+        //group1 = has ns bit set // this group will have one odd apprearing number
+        //group2 = doesn't has ns bit set // this group will have other odd apprearing number
+        // because any set bit in XOR meaning that bit is different in those two odd appearing numbers
+        for (int i=0;i<N;i++){
+            if ((Arr[i]&ns)==0){//ns is not set
+                res1=res1^Arr[i]; // this gives one odd occurring num
+            }
+            else 
+                res2=res2^Arr[i]; // this gies other odd occurring num
+            
+        }
+        if (res2 > res1){
+            x.push_back(res2);
+            x.push_back(res1);
+        }
+        else {
+            x.push_back(res1);
+            x.push_back(res2);
+        }
+        
+    return x;
+    }
+
+57. Power Set using bitwise operators
+
+https://practice.geeksforgeeks.org/problems/power-set4302/1#
+
+ //Given a string S find all possible subsequences of the string in lexicographically-sorted order.
+
+//Example 1:
+//Input : str = "abc"
+//Output: a ab abc ac b bc c
+//Explanation : There are 7 substrings that 
+//can be formed from abc.
+
+		vector<string> AllPossibleStrings(string s){
+		    // Code here
+		    vector <string> out;
+		    
+		    int n=s.length();
+		    int num=pow(2,n);
+		    
+		    for (int counter=0;counter<num;counter++){
+		        string res;
+		        for(int j=0;j<n;j++){
+		            if ((counter & (1 << j)) !=0){
+		                res=res+s[j];
+		                //cout << s[j];
+		            }
+		        } 
+		       //cout << "\n";
+		       out.push_back(res);
+		    }
+		    sort(out.begin(),out.end());
+		    return out;
+		}
+
+58 . Find first set bit 
+
+Given an integer an N. The task is to return the position of first set bit found from the right side in the binary representation of the number.
+Note: If there is no set bit in the integer N, then return 0 from the function.  
+
+Example 1:
+
+Input: N = 18
+Output: 2
+Explanation: Binary representation of 
+18 is 010010,the first set bit from the 
+right side is at position 2.
+
+    unsigned int getFirstSetBit(int n) // return log2(n,-n) + 1;
+    {
+        // Your code here
+        if (n==0) return 0;
+        int count=1;
+        
+        while((n&1)==0){
+               count++;  
+               n=n>>1;
+            }
+        return count; 
+    }
+
+59. Rightmost different bit
+
+    //Function to find the first position with different bits.
+    int posOfRightMostDiffBit(int m, int n)
+    {
+        // Your code here
+        int XOR=m^n; // sets last different bit
+    
+        if (XOR==0) return 0;
+        
+        int count=1;
+        
+        while((XOR&1)==0){
+               count++;  
+               XOR=XOR>>1;
+            }
+        return count; 
+    }
+
+60. 
+    // Function to check if Kth bit is set or not.
+    bool checkKthBit(int n, int k)
+    {
+        // Your code here
+        // It can be a one liner logic!! Think of it!!
+        return(n&1<<k);
+    }
+
+61. You are given two numbers A and B. 
+The task is to count the number of bits needed to be flipped to convert A to B.
+    // Function to find number of bits needed to be flipped to convert A to B
+    int countBitsFlip(int a, int b){
+        
+        // Your logic here
+        int XOR=a^b;
+        int count=0;
+        
+        while (XOR){
+            count++;
+            XOR=XOR&(XOR-1);
+        }
+        
+        return count;
+        
+    }
+
+62. Number is sparse or not 
+Basic Accuracy: 50.72% Submissions: 22907 Points: 1
+Given a number N. The task is to check whether it is sparse or not. A number is said to be a sparse number if no two or more consecutive bits are set in the binary representation.
+
+Example 1:
+
+Input: N = 2
+Output: 1
+Explanation: Binary Representation of 2 is 10, 
+which is not having consecutive set bits. 
+So, it is sparse number.
+
+    //Function to check if the number is sparse or not.
+    bool isSparse(int n)
+    {
+        // Your code
+        if (n==0) return false;
+        return !(n & (n >> 1));
+    }
+
+63. Longest Consecutive 1's 
+Given a number N. Find the length of the longest consecutive 1s in its binary representation.
+
+Example 1:
+
+Input: N = 14
+Output: 3
+Explanation: 
+Binary representation of 14 is 
+1110, in which 111 is the longest 
+consecutive set bits of length is 3.
+
+    int maxConsecutiveOnes(int N)
+    {
+        // code here
+        int count=0;
+        int maxCount=0;
+        
+        while(N>0){
+            N=( N & (N>>1)); // After length of longest consecutive 1's iterations only N will become 0
+            count++;         // shorter consecutive 1's will become 0 before N is finally 0
+        }
+       return count++; 
+    }
+
+
+64. Maximum AND Value 
+Medium Accuracy: 44.82% Submissions: 22770 Points: 4
+Given an array arr[] of N positive elements. The task is to find the Maximum AND Value generated by any pair(arri, arrj) from the array such that i != j.
+Note: AND is bitwise '&' operator.
+
+
+Example 1:
+
+Input: 
+N = 4
+arr[] = {4, 8, 12, 16}
+Output: 8
+Explanation:
+Pair (8,12) has the Maximum AND Value 8.
+Example 2:
+
+Input:
+N = 4
+arr[] = {4, 8, 16, 2}
+Output: 0
+Explanation: Any two pairs of the array has 
+Maximum AND Value 0.
+
+O(n^2):
+    // Function for finding maximum AND value.
+    int maxAND (int arr[], int N)
+    {
+        // Your code here
+        int andV=0;
+        int maxAndV=0;
+        
+        for (int i=0;i<N;i++){
+            for(int j=i+1;j<N;j++){
+                andV=arr[i]&arr[j];
+                if (andV>maxAndV){
+                    maxAndV=andV;
+                }
+            }
+        }
+        
+        return maxAndV;
+    }
+
+
+GFG: O(N * log(M)) // M : number of bits to represent maximum element
+
+    //count number of elements in the array with current bit(MSB..LSB) set
+    int getCount(int pattern,int a[],int n)
+    {
+        int count=0;
+        
+        //iterate over array
+        for (int i=0;i<n;i++){
+            //check if a[i] has current(MSB..LSB) bit set
+            if( (a[i] & pattern) == pattern){
+                count++;
+            }
+        }
+        
+        return count;
+        
+    }
+        
+    // Function for finding maximum AND value.
+    int maxAND (int arr[], int N)
+    {
+        // Your code here
+        int res=0,count;
+        
+        // 17 bits can represent arr[i] <=10^5. 
+        //iterating from MSB to LSB
+        for(int bit=16;bit>=0;bit--){
+            //1<<bit = 10000000000000000 (MSB set)
+            count=getCount(res|(1<<bit),arr,N);
+            //res | (1<<bit) => set MSB in result
+            
+            //checking if we have two such elements that 
+            //are setting current bit(MSB..LSB)
+            if (count>=2){
+                res=res|(1<<bit);
+            }
+        
+        }
+        return res;
+    }
+
+65 . Swap all odd and even bits 
+Given an unsigned integer N. The task is to swap all odd bits with even bits. For example, if the given number is 23 (00010111), it should be converted to 43(00101011). Here, every even position bit is swapped with adjacent bit on the right side(even position bits are highlighted in the binary representation of 23), and every odd position bit is swapped with an adjacent on the left side.
+
+Example 1:
+
+Input: N = 23
+Output: 43
+Explanation: 
+Binary representation of the given number 
+is 00010111 after swapping 
+00101011 = 43 in decimal.
+Example 2:
+
+Input: N = 2
+Output: 1
+Explanation: 
+Binary representation of the given number 
+is 10 after swapping 01 = 1 in decimal.
+
+    //Function to swap odd and even bits.
+    unsigned int swapBits(unsigned int n)
+    {
+    	// Your code here
+        //0xAAAAAAAA is a 32 bit number with all even bits set as 1 
+        //and all odd bits as 0.
+        //0x55555555 is a 32 bit number with all odd bits set as 1 
+        //and all even bits as 0.
+    	int even=n & 0xAAAAAAAA;
+    	int odd=n & 0x55555555; 
+    	
+    	even = even >> 1; // right shift all the even bits by 1.
+    	odd = odd << 1; // left shift all the odd bits by 1.
+    	return even | odd;
+    }
+
+
+66. Gray to Binary equivalent 
+Basic Accuracy: 64.06% Submissions: 11376 Points: 1
+Given N in Gray Code, find its binary equivalent. Return the decimal representation of the binary equivalent.
+
+
+
+Example 1:
+
+Input: N = 4
+Output: 7
+Explanation:
+Given 4 representing gray code 110.
+Binary equivalent of gray code 110 is 100.
+Return 7 representing gray code 100.
+Example 2:
+
+Input: N = 15
+Output: 10
+Explanation:
+Given 15 representing gray code 1000.
+Binary equivalent of gray code 1000 is 1111.
+Return 10 representing gray code 1111 
+ie binary 1010.
+Example 3:
+
+Input: N = 0
+Output: 0
+Explanation: 
+Zero remains the same in all systems.
+
+Your Task: 
+You don't need to read input or print anything. Your task is to complete the function grayToBinary() which accepts an integer n as an input parameter and returns decimal of the binary equivalent of the given gray code. 
+
+Expected Time Complexity: O(log N)
+Expected Auxiliary Space: O(1)
+
+
+   // function to convert a given Gray equivalent n to Binary equivalent.
+    int grayToBinary(int n)
+    {
+        int b=0;
+        //We use a loop and Right shift n everytime until it becomes 0.
+        for(n=n;n>0;n=n>>1)
+            //We use XOR operation which stores the result of conversion in b.
+            b^=n;
+            
+        //returning the Binary equivalent.
+        return b;
+    }
+};
+
+
+67.Binary To Gray Code equivalent 
+Basic Accuracy: 67.7% Submissions: 10606 Points: 1
+You are given a decimal number N. You need to find the gray code of the number N and convert it into decimal.
+To see how it's done, refer here.
+
+Example 1:
+
+Input: N = 7
+Output: 4
+Explanation: 7 is represented as 111 in 
+binary form. The gray code of 111 is 100, 
+in the binary form whose decimal equivalent 
+is 4.
+Example 2:
+
+Input: N = 10
+Output: 15
+Explanation: 10 is represented as 1010 in 
+binary form. The gray code of 1010 is 1111, 
+in the binary form whose decimal equivalent 
+is 15.
+Example 3:
+
+Input: N = 0
+Output: 0
+Explanation: Zero is represented as zero 
+in binary, gray, and decimal.
+
+    //  Function to find the gray code of given number n
+    int greyConverter(int n)
+    {
+        //Performing Right Shift on n, 1 time.
+        int q = n >> 1;
+        
+        //returning the result of XOR opertaion of n and q 
+        //which gives gray code.
+        return n^q;
+    }
+};
+
+#######Recursion
+68 Palindrome String 
+Easy Accuracy: 50.77% Submissions: 65112 Points: 2
+Given a string S, check if it is palindrome or not.
+
+Example 1:
+
+Input: S = "abba"Output: 1Explanation: S is a palindrome
+Example 2:
+
+Input: S = "abc" Output: 0Explanation: S is not a palindrome
+Your Task:
+You don't need to read input or print anything. Complete the function isPlaindrome()which accepts string S and returns an integervalue 1 or 0.
+
+
+Expected Time Complexity: O(Length of S)
+Expected Auxiliary Space: O(1)
+
+Solution : 
+
+int isPal(char s[],int idx1,int idx2){
+    if (s[idx1]!=s[idx2]){
+        return 0;
+    }
+    
+    if (idx1==0){
+        return 1;
+    }
+    
+    isPal(s,idx1-1 , idx2+1); // compare letters equidistant from mid
+}    
+
+int isPalindrome(char S[])
+{
+    // Your code goes here
+    int length = strlen(S);
+    
+    //printf("%d\n",length);
+     //printf("\n");
+     
+    if (length ==1 ) return 1;
+    
+    if (length%2 == 0) { // if length of string is even start comparing mid and mid+1 letters
+        return isPal(S,(length/2)-1,(length/2));
+    }
+    else // if length of string is odd start comparing mid-1 and mid+1 letters
+        return isPal(S,(length/2)-1,(length/2)+1);
+    
+}
+
+GFG:
+
+int isPal(char s[],int idx1,int idx2){
+    if (s[idx1]!=s[idx2]){
+        return 0;
+    }
+    
+    //idx1==idx2 when length of string is odd
+    //idx2==idx1+1 when length of string is even
+    if ((idx1==idx2) || (idx2==idx1+1)){
+        return 1;
+    }
+    
+    isPal(s,idx1+1, idx2-1);
+}    
+
+int isPalindrome(char S[])
+{
+    // Your code goes here
+    int length = strlen(S);
+    
+    //printf("%d\n",length);
+     //printf("\n");
+     
+    if (length ==1 ) return 1;
+    return isPal(S,0,length-1);
+    
+}
+
+69. Rope cutting problem into max number of pieces
+
+Given : n , a ,b ,c 
+
+ex: n=23 , a=11,b=13,c=12 
+
+p1 : 11 , p2: 12 => ouput : 2 (two pieces)
+
+Cut the rope of length = n into maximum number of pieces where length 
+ of pieces should be in set {a,b,c} 
+
+#include <iostream>
+using namespace std;
+
+
+int maxCuts(int n, int a, int b, int c)
+{
+	if(n == 0)
+		return 0;
+	if(n <= -1)
+		return -1;
+
+    //solution with maximum number of cuts
+	int res = max(maxCuts(n-a, a, b, c), 
+	          max(maxCuts(n-b, a, b, c), 
+	          maxCuts(n-c, a, b, c)));
+
+	if(res == -1)
+		return -1; // no solution
+
+	return res + 1;  // already made a cut
+}
+int main() {
+	
+	int n = 23, a = 11, b = 9, c = 12;
+	
+	cout<<maxCuts(n, a, b, c);
+	
+	return 0;
+}
+
+70 . Generating subsets of string using Recursion
+
+
+	    void subsets(string s, string curr="" , int i=0)
+	    {
+	        //vector <string> out;
+	        
+	        if (s.length() == i){
+	           // out.push_back(curr);
+	           cout << curr << "\t";
+	           return;
+	        }
+	        
+	        subsets(s,curr,i+1);
+	        subsets(s,curr+s[i],i+1);
+	        
+	        //return out;
+	    }
+
+71 . Tower of Hanoi problem
+ 
+ The tower of Hanoi is a famous puzzle where we have three rods and N disks. The objective of the puzzle is to move the entire stack to another rod. You are given the number of discs N. Initially, these discs are in the rod 1. You need to print all the steps of discs movement so that all the discs reach the 3rd rod. Also, you need to find the total moves.
+Note: The discs are arranged such that the top disc is numbered 1 and the bottom-most disc is numbered N. Also, all the discs have different sizes and a bigger disc cannot be put on the top of a smaller disc. Refer the provided link to get a better clarity about the puzzle.
+
+Example 1:
+
+Input:
+N = 2
+Output:
+move disk 1 from rod 1 to rod 2
+move disk 2 from rod 1 to rod 3
+move disk 1 from rod 2 to rod 3
+3
+Explanation: For N=2 , steps will be
+as follows in the example and total
+3 steps will be taken.
+
+solution : https://practice.geeksforgeeks.org/problems/tower-of-hanoi-1587115621/1# 
+
+
+
+//avoid space at the starting of the string in "move disk....."
+long long toh(int N, int from, int to, int aux) {
+    //Your code here
+    if ( N <=1) {
+        printf("move disk %d from rod %d to rod %d\n",N,from,to);
+        return 1;
+    }
+    
+    // lets say actually from is A , to is C and aux is B.
+    toh(N-1,from,aux,to); // first move N-1 disks from A to B using C as aux.
+    printf("move disk %d from rod %d to rod %d\n",N,from,to); // then move last disk from A to C.
+    toh(N-1,aux,to,from); // then again move N-1 disks from B to C using A as aux.
+    
+    return pow(2,N) -1; // number of steps
+}
+
+72. Count Total Digits in a Number
+
+You are given a number n. You need to find the count of digits in n.
+
+Example 1:
+
+Input:
+n = 1
+Output: 1
+Explanation: Number of digit in 1 is 1.
+
+int countDigits(int n)
+{
+   //Your code here
+   
+   if ( n < 10) {
+       return 1;
+   }
+   
+   return 1 + countDigits(n/10);
+}
+
+73. 
+Digital Root 
+Easy Accuracy: 53.0% Submissions: 26087 Points: 2
+You are given a number n. You need to find the digital root of n. DigitalRoot of a number is the recursive sum of its digits until we get a single digit number.
+
+Example 1:
+
+Input:
+n = 1
+Output:  1
+Explanation: Digital root of 1 is 1
+
+int sumdigits(int n){
+    if (n < 10){
+        return n;
+    }
+    
+    return (n%10) + sumdigits(n/10);
+}
+
+int digitalRoot(int n)
+{
+    //Your code here
+    int res = sumdigits(n);
+    
+    if ( res < 10){
+        return res;
+    }
+    else 
+        return digitalRoot(res);
+}
+
+74. fibbonacci using Recursion
+
+int fibonacci(int n)
+{
+    //Your code here
+    if (n <=2) {
+        return 1;
+    }
+    
+    return fibonacci(n-1) + fibonacci(n-2);
+}
+
+75 . Power using recursion
+Power Using Recursion 
+Basic Accuracy: 63.0% Submissions: 18193 Points: 1
+You are given two numbers n and p. You need to find np.
+
+Example 1:
+
+int RecursivePower(int n, int p)
+{
+    //Your code here
+    if (p <= 0){
+        return 1;
+    }
+    return n * RecursivePower(n,p-1);
+}
+
+76. 
+Power Set Using Recursion 
+Easy Accuracy: 49.26% Submissions: 19648 Points: 2
+You are given a string. You need to print the lexicographically sorted power-set of the string.
+Note: The string s contains lowercase letter of alphabet.
+
+Example 1:
+
+Input:
+s = a
+Output: a
+Explanation: empty string and a 
+are only sets.
+
+vector <string> out;
+//Function to return the lexicographically sorted power-set of the string.
+vector <string> powerSet(string s, string curr="", int index=0)
+{
+   //Your code here
+  // vector <string> out;
+  
+   if (index == 0 ){
+       out.clear();
+   } 
+   
+   if (s.length() == index){
+       //cout<<curr<<" ";
+       out.push_back(curr);
+       return out;
+    }
+    
+    powerSet(s,curr,index+1);
+    powerSet(s,curr + s[index],index+1);
+    return out;
+   
+}
+
+77.
+Josephus problem 
+Easy Accuracy: 52.47% Submissions: 55631 Points: 2
+Given the total number of persons n and a number k which indicates that k-1 persons are skipped and kth person is killed in circle in a fixed direction.
+
+The task is to choose the safe place in the circle so that when you perform these operations starting from 1st place in the circle, you are the last one remaining and survive.
+
+Example 1:
+
+Input:
+n = 3 k = 2
+Output: 3
+Explanation: There are 3 persons so 
+skipping 1 person i.e 1st person 2nd 
+person will be killed. Thus the safe 
+position is 3.
+ 
+
+Example 2:
+
+Input:
+n = 5 k = 3
+Output: 4
+Explanation: There are 5 persons so 
+skipping 2 person i.e 3rd person will 
+be killed. Thus the safe position is 4.
+
+int check(int n, int k){
+    if ( n ==1){
+        return 0;
+    }
+    
+    return (check(n-1,k) + k ) %n;
+}
+int josephus(int n, int k)
+{
+   //Your code here
+   return check(n,k) + 1;
+   
+}
+
+1] Different Bits Sum Pairwise: https://www.interviewbit.com/problems/different-bits-sum-pairwise/#
+2] Valid Parentheses: https://leetcode.com/problems/valid-parentheses/
+3] Linked List Cycle: https://leetcode.com/problems/linked-list-cycle/submissions/
+4] Generate all Parentheses II https://www.interviewbit.com/problems/generate-all-parentheses-ii/
+5] Combinations: https://www.interviewbit.com/problems/combinations/
+6] Combination Sum: https://www.interviewbit.com/problems/combination-sum/
+7] Permutations: https://www.interviewbit.com/problems/permutations/
+8] Subset: https://www.interviewbit.com/problems/subset/
