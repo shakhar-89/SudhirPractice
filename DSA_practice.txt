@@ -1,5 +1,3 @@
-### Prepare these questions in 2-3 days before any good interview in which basic DSA expetise is expected.
-
 ## Array
 1. contiguous subarrary with maximum sum - Kadanes Algo
 
