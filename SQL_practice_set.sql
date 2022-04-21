@@ -2256,3 +2256,259 @@ left join friendship f on ( ("user_id" = user1_id and "recommended_id" = user2_i
                           or ("user_id" = user2_id and "recommended_id" = user1_id))                          
 where f.user1_id is null or f.user2_id is null
 
+45. https://leetcode.com/problems/game-play-analysis-iii/ 
+Game Play Analysis III
+Table: Activity
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some games.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on someday using some device.
+ 
+
+Write an SQL query to report for each player and date, how many games played so far by the player. That is, the total number of games played by the player until that date. Check the example for clarity.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Activity table:
++-----------+-----------+------------+--------------+
+| player_id | device_id | event_date | games_played |
++-----------+-----------+------------+--------------+
+| 1         | 2         | 2016-03-01 | 5            |
+| 1         | 2         | 2016-05-02 | 6            |
+| 1         | 3         | 2017-06-25 | 1            |
+| 3         | 1         | 2016-03-02 | 0            |
+| 3         | 4         | 2018-07-03 | 5            |
++-----------+-----------+------------+--------------+
+Output: 
++-----------+------------+---------------------+
+| player_id | event_date | games_played_so_far |
++-----------+------------+---------------------+
+| 1         | 2016-03-01 | 5                   |
+| 1         | 2016-05-02 | 11                  |
+| 1         | 2017-06-25 | 12                  |
+| 3         | 2016-03-02 | 0                   |
+| 3         | 2018-07-03 | 5                   |
++-----------+------------+---------------------+
+Explanation: 
+For the player with id 1, 5 + 6 = 11 games played by 2016-05-02, and 5 + 6 + 1 = 12 games played by 2017-06-25.
+For the player with id 3, 0 + 5 = 5 games played by 2018-07-03.
+Note that for each player we only care about the days when the player logged in.
+
+--solution : 
+select player_id "player_id",to_char(event_date,'yyyy-mm-dd') "event_date",
+sum(games_played) over( partition by player_id order by event_date rows between unbounded preceding and 0 preceding) "games_played_so_far"
+from Activity 
+order by player_id,event_date
+
+46. https://leetcode.com/problems/game-play-analysis-iv/ 
+
+Game Play Analysis IV
+Table: Activity
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some games.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on someday using some device.
+ 
+
+Write an SQL query to report the fraction of players that logged in again on the day after the day they first logged in, rounded to 2 decimal places. In other words, you need to count the number of players that logged in for at least two consecutive days starting from their first login date, then divide that number by the total number of players.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Activity table:
++-----------+-----------+------------+--------------+
+| player_id | device_id | event_date | games_played |
++-----------+-----------+------------+--------------+
+| 1         | 2         | 2016-03-01 | 5            |
+| 1         | 2         | 2016-03-02 | 6            |
+| 2         | 3         | 2017-06-25 | 1            |
+| 3         | 1         | 2016-03-02 | 0            |
+| 3         | 4         | 2018-07-03 | 5            |
++-----------+-----------+------------+--------------+
+Output: 
++-----------+
+| fraction  |
++-----------+
+| 0.33      |
++-----------+
+Explanation: 
+Only the player with id 1 logged back in after the first day he had logged in so the answer is 1/3 = 0.33
+
+--solution
+/* Write your PL/SQL query statement below */
+with temp as (select count(distinct player_id) tp from Activity)
+select 
+round(count(a.player_id) / max(tp),2) as "fraction"
+ from 
+ --day of first login is important
+  ( select player_id player_id , min(event_date) event_date from Activity group by player_id) a 
+  inner join Activity b on a.player_id = b.player_id
+   and a.event_date = b.event_date - interval '1' day
+inner join temp on 1=1
+
+
+47. https://leetcode.com/problems/get-highest-answer-rate-question/ 
+ Get Highest Answer Rate Question
+Table: SurveyLog
+
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| id          | int  |
+| action      | ENUM |
+| question_id | int  |
+| answer_id   | int  |
+| q_num       | int  |
+| timestamp   | int  |
++-------------+------+
+There is no primary key for this table. It may contain duplicates.
+action is an ENUM of the type: "show", "answer", or "skip".
+Each row of this table indicates the user with ID = id has taken an action with the question question_id at time timestamp.
+If the action taken by the user is "answer", answer_id will contain the id of that answer, otherwise, it will be null.
+q_num is the numeral order of the question in the current session.
+ 
+
+The answer rate for a question is the number of times a user answered the question by the number of times a user showed the question.
+
+Write an SQL query to report the question that has the highest answer rate. If multiple questions have the same maximum answer rate, report the question with the smallest question_id.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+SurveyLog table:
++----+--------+-------------+-----------+-------+-----------+
+| id | action | question_id | answer_id | q_num | timestamp |
++----+--------+-------------+-----------+-------+-----------+
+| 5  | show   | 285         | null      | 1     | 123       |
+| 5  | answer | 285         | 124124    | 1     | 124       |
+| 5  | show   | 369         | null      | 2     | 125       |
+| 5  | skip   | 369         | null      | 2     | 126       |
++----+--------+-------------+-----------+-------+-----------+
+Output: 
++------------+
+| survey_log |
++------------+
+| 285        |
++------------+
+Explanation: 
+Question 285 was showed 1 time and answered 1 time. The answer rate of question 285 is 1.0
+Question 369 was showed 1 time and was not answered. The answer rate of question 369 is 0.0
+Question 285 has the highest answer rate.
+
+--solution:
+with temp as (
+select 
+ question_id,
+ sum(case when action = 'answer' then 1 else 0 end) /
+ sum(case when action = 'show' then 1 else 0 end) answer_rate
+from SurveyLog
+group by question_id),
+temp2 as ( 
+select question_id , dense_rank() over (order by answer_rate desc,question_id) rnk 
+from temp )
+select question_id survey_log from temp2 where rnk=1
+
+
+48. https://leetcode.com/problems/investments-in-2016/ 
+
+Investments in 2016
+
+Table: Insurance
+
++-------------+-------+
+| Column Name | Type  |
++-------------+-------+
+| pid         | int   |
+| tiv_2015    | float |
+| tiv_2016    | float |
+| lat         | float |
+| lon         | float |
++-------------+-------+
+pid is the primary key column for this table.
+Each row of this table contains information about one policy where:
+pid is the policyholders policy ID.
+tiv_2015 is the total investment value in 2015 and tiv_2016 is the total investment value in 2016.
+lat is the latitude of the policy holders city.
+lon is the longitude of the policy holders city.
+ 
+
+Write an SQL query to report the sum of all total investment values in 2016 tiv_2016, for all policyholders who:
+
+have the same tiv_2015 value as one or more other policyholders, and
+are not located in the same city like any other policyholder (i.e., the (lat, lon) attribute pairs must be unique).
+Round tiv_2016 to two decimal places.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Insurance table:
++-----+----------+----------+-----+-----+
+| pid | tiv_2015 | tiv_2016 | lat | lon |
++-----+----------+----------+-----+-----+
+| 1   | 10       | 5        | 10  | 10  |
+| 2   | 20       | 20       | 20  | 20  |
+| 3   | 10       | 30       | 20  | 20  |
+| 4   | 10       | 40       | 40  | 40  |
++-----+----------+----------+-----+-----+
+Output: 
++----------+
+| tiv_2016 |
++----------+
+| 45.00    |
++----------+
+Explanation: 
+The first record in the table, like the last record, meets both of the two criteria.
+The tiv_2015 value 10 is the same as the third and fourth records, and its location is unique.
+
+The second record does not meet any of the two criteria. Its tiv_2015 is not like any other policyholders and its location is the same as the third record, which makes the third record fail, too.
+So, the result is the sum of tiv_2016 of the first and last record, which is 45.
+
+--solution
+/* Write your PL/SQL query statement below */
+select round(sum(e.tiv_2016),2) "tiv_2016"
+ from Insurance e 
+where exists ( /* unique location*/
+     select 1 
+ from Insurance i where e.lon = i.lon and e.lat = i.lat
+group by lat,lon
+having count(1) = 1)
+and exists ( 
+     select 1 /* same tiv_2015 value as one or more other policyholders*/ 
+  from Insurance i where e.tiv_2015 = i.tiv_2015 and e.pid <> i.pid)
+
+

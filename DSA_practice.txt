@@ -62,7 +62,7 @@ public:
 
 4. Count total set bits // bitwise operator
 
-    int countSetBits(int n)
+    int countSetBits(int n) 
     {
         n++;
         int count=0;
@@ -188,7 +188,6 @@ int removeDuplicates(int* A, int n1) {
         }
         
     int count=1;
-    int res[n1];
     int i,j;
     
     for (i=1;i<n1;i++)
@@ -197,6 +196,9 @@ int removeDuplicates(int* A, int n1) {
             A[count++]=A[i];
         }
     }
+    // for (j=0;j<count;j++){
+    //     printf("%d",A[j]);
+    // }
     return count;
 }
 
