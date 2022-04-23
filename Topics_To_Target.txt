@@ -1,0 +1,81 @@
+--Amazon interview prep for 21st apr 2022
+ -- SQL and problem solving revision and practice  (till here for 1st round) 
+ -- revisit python and spark work done so far (later rounds)
+ -- Dimensional modelling videos , questions , practice
+ -- read on hadoop-spark architecture , designing and optimization
+
+
+--keep trying first outside 
+**) Read fundamentals of RDBMS (finish by 30 June)
+    - Dataware house toolkit , Kimball  (finish by 30 April) - in prog
+	- Read ora docs on oracle(architect and general concepts) (finish by 30 May)
+	- Read ora docs on SQL tuning (finish by 15 June)
+	- Read ora docs on data warehousing (finish by 30 June)
+
+**) Address below questions 
+ 1. differences between Spark SQL and RDBMS(Oracle)
+ 2. Pros & cons of using Spark SQL against Dataframes
+ 3. Difference between RDD and dataframes
+ 4. what are the issues if DB is not normalized.
+ 5. design considerations when designing OLTP vs OLAP
+ 6. explain plan
+ 7. Oracle architecture
+
+**) Cloud data engineering experience/exposure 
+	-- GCP data engineer certifications
+
+**)Practice
+ 	SQL[https://platform.stratascratch.com/ & leetcode]
+	DSA[geeksforgeeks]
+	modelling schemas & designing schemas[internet]
+
+**) Do DE projects from:
+ 	github
+ 	own 
+    covering Programming(Python)
+		-Core
+		-collections
+		-dataframes(Pandas)
+		-PySpark
+
+**) Work on a project that uses : 
+ 1. python + pySpark,SQL,cloud(s3 + Redshift),DB(postgres & cassandra)
+ 2. python + pySpark,SQL,cloud(OCI object storage + ADW),DB(postgres & cassandra)
+
+**) Cloud(OCI) + DW(Oracle,DB2,my own experience)
+	Cloud - OCI certifications(fundamental+architect)
+
+**) Cloud data engineering experience/exposure
+	-- AWS data engineer certifications
+ 
+**) DS,algo, problem solving and and CS fundamentals topics
+
+	DS
+	 Arrays
+	 Hash-Map
+	 LinkedList
+	 doubly LinkedList
+	 strings
+
+	Sorting
+	 Bubble
+	 Insertion 
+	 heap
+	 merge
+	 quick
+	 bucket
+	 
+    Graph 
+     DFS
+     BFS	
+
+**) Hone Linux/unix skills
+
+**) Reference : 
+ 1. Paaji's github: https://github.com/dalwindr/AV_ML_Notebooks/blob/master/new_AV_loanPrediction_cleaned.ipynb
+ 2. LL 
+		- Analyzing big data with Hive
+		- Data Analysis on Hadoop
+
+ 3. https://github.com/BenSchr/Udacity-Data-Engineering-Projects
+ 4. https://www.cloudera.com/campaign/ln/9sight-consulting-the-data-warehouse-lives-on.pdf.landing.html?li_fat_id=c220cef6-4095-4783-9809-8cc8dc2a9d8b

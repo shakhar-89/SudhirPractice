@@ -2512,3 +2512,276 @@ and exists (
   from Insurance i where e.tiv_2015 = i.tiv_2015 and e.pid <> i.pid)
 
 
+49.  https://leetcode.com/problems/shortest-distance-in-a-plane/ 
+  
+  Shortest Distance in a Plane
+
+Table: Point2D
+
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| x           | int  |
+| y           | int  |
++-------------+------+
+(x, y) is the primary key column for this table.
+Each row of this table indicates the position of a point on the X-Y plane.
+ 
+
+The distance between two points p1(x1, y1) and p2(x2, y2) is sqrt((x2 - x1)2 + (y2 - y1)2).
+
+Write an SQL query to report the shortest distance between any two points from the Point2D table. Round the distance to two decimal points.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Point2D table:
++----+----+
+| x  | y  |
++----+----+
+| -1 | -1 |
+| 0  | 0  |
+| -1 | -2 |
++----+----+
+Output: 
++----------+
+| shortest |
++----------+
+| 1.00     |
++----------+
+Explanation: The shortest distance is 1.00 from point (-1, -1) to (-1, 2).
+
+--solution 
+/* Write your PL/SQL query statement below */
+select min(round(sqrt(power(p1.x-p2.x,2) + power(p1.y-p2.y,2)),2)) "shortest"
+ from Point2D p1, Point2D p2
+where p1.x <> p2.x or p1.y <> p2.y
+
+50. https://leetcode.com/problems/second-degree-follower/ 
+
+Second Degree Follower
+
+Table: Follow
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| followee    | varchar |
+| follower    | varchar |
++-------------+---------+
+(followee, follower) is the primary key column for this table.
+Each row of this table indicates that the user follower follows the user followee on a social network.
+There will not be a user following themself.
+ 
+
+A second-degree follower is a user who:
+
+follows at least one user, and
+is followed by at least one user.
+Write an SQL query to report the second-degree users and the number of their followers.
+
+Return the result table ordered by follower in alphabetical order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Follow table:
++----------+----------+
+| followee | follower |
++----------+----------+
+| Alice    | Bob      |
+| Bob      | Cena     |
+| Bob      | Donald   |
+| Donald   | Edward   |
++----------+----------+
+Output: 
++----------+-----+
+| follower | num |
++----------+-----+
+| Bob      | 2   |
+| Donald   | 1   |
++----------+-----+
+Explanation: 
+User Bob has 2 followers. Bob is a second-degree follower because he follows Alice, so we include him in the result table.
+User Donald has 1 follower. Donald is a second-degree follower because he follows Bob, so we include him in the result table.
+User Alice has 1 follower. Alice is not a second-degree follower because she does not follow anyone, so we don not include her in the result table.
+
+--solution:
+/* Write your PL/SQL query statement below */
+select followee as "follower",count(distinct follower) as "num"
+ from Follow e
+where exists (
+    select 1 from Follow i where e.followee = i.follower
+)
+group by followee
+having count(distinct follower) >= 1
+
+51. https://leetcode.com/problems/customers-who-bought-all-products/
+
+Customers Who Bought All Products
+
+Table: Customer
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| customer_id | int     |
+| product_key | int     |
++-------------+---------+
+There is no primary key for this table. It may contain duplicates.
+product_key is a foreign key to Product table.
+ 
+
+Table: Product
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| product_key | int     |
++-------------+---------+
+product_key is the primary key column for this table.
+ 
+
+Write an SQL query to report the customer ids from the Customer table that bought all the products in the Product table.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Customer table:
++-------------+-------------+
+| customer_id | product_key |
++-------------+-------------+
+| 1           | 5           |
+| 2           | 6           |
+| 3           | 5           |
+| 3           | 6           |
+| 1           | 6           |
++-------------+-------------+
+Product table:
++-------------+
+| product_key |
++-------------+
+| 5           |
+| 6           |
++-------------+
+Output: 
++-------------+
+| customer_id |
++-------------+
+| 1           |
+| 3           |
++-------------+
+Explanation: 
+The customers who bought all the products (5 and 6) are customers with IDs 1 and 3.
+
+--solution
+/* Write your PL/SQL query statement below */
+select customer_id 
+ from Customer
+group by customer_id
+having count(distinct product_key) = (select count(distinct product_key) from Product)
+
+52. https://leetcode.com/problems/delete-duplicate-emails/ 
+
+Delete Duplicate Emails
+
+Table: Person
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| email       | varchar |
++-------------+---------+
+id is the primary key column for this table.
+Each row of this table contains an email. The emails will not contain uppercase letters.
+ 
+
+Write an SQL query to delete all the duplicate emails, keeping only one unique email with the smallest id. Note that you are supposed to write a DELETE statement and not a SELECT one.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Person table:
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
+| 3  | john@example.com |
++----+------------------+
+Output: 
++----+------------------+
+| id | email            |
++----+------------------+
+| 1  | john@example.com |
+| 2  | bob@example.com  |
++----+------------------+
+Explanation: john@example.com is repeated two times. We keep the row with the smallest Id = 1.
+
+--solution:
+ delete from Person e 
+  where exists (select 1 from Person i where e.email = i.email and e.id > i.id)
+
+53. Find how many products fall into customer_budget along with list of those products
+    In case of clash choose the low costly product 
+
+--schema
+drop table products;
+create table products(product_id varchar(20) ,cost int);
+insert into products values ('P1',200),('P2',300),('P3',500),('P4',800);
+commit;
+
+drop table customer_budget;
+create table customer_budget(customer_id int,budget int);
+insert into customer_budget values (100,400),(200,800),(300,1500);
+commit;
+
+col products for a40
+--solution
+with temp as (
+  select product_id,cost,
+    --this works because of the rule on choosing low costly product in case of clash  
+    sum(cost) over(order by cost rows between unbounded preceding and 0 preceding) rsum
+   from products
+) 
+select 
+  customer_id,
+  budget,
+  count(distinct product_id) no_of_products,
+  LISTAGG(product_id, ',') WITHIN GROUP (ORDER BY product_id) "products"
+from customer_budget cb 
+ left join temp p on p.rsum < cb.budget
+group by customer_id,budget
+
+--ouput:
+CUSTOMER_ID     BUDGET NO_OF_PRODUCTS products
+----------- ---------- -------------- ----------------------------------------
+        100        400              1 P1
+        200        800              2 P1,P2
+        300       1500              3 P1,P2,P3
+
+3 rows selected.
+
+SQL>
+

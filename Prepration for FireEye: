@@ -1,0 +1,16 @@
+Prepration for FireEye
+    1 . Practice Some good number of Database design questions and answers.
+         - convert 1-2 line problem statements to database design , procedures, functions to solve business requirements.
+         - Kind of plan(with good level of details) end-to-end solution for a give problem statement. 
+
+    2 . Practice some good questions on database internals.
+        - locking 
+        - consistency
+        - serialization
+        - recovery paths
+
+    3.  Go through SQL practice sheet.
+    4 . Practice some good database performance techniques.
+    5 . Practice some database maintenance questions.
+    6 . Practice some good questions on python.
+    7 . Practice some good questions on cassandra.
