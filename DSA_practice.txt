@@ -9,6 +9,20 @@
 		if(sum>maxsum) maxsum=sum;
         if(sum<=0) sum=0;		
    }
+
+   --solution when array contains only negative numbers.
+
+   int maxsum(int arr[],int n) {
+        int res = arr[0];
+        int maxending = arr[0];
+
+        for (int i=0;i<n;i++){
+            maxending = max (maxending + arr[i],arr[i]);
+            res = max(res,maxending);
+        }
+
+    return res;
+   }
   
 2. Re-arrange(arr[i]->arr[arr[i]]) array with space O(1).
 
@@ -118,7 +132,7 @@ int firstZero(int arr[], int low, int high) {
 
 //my approach  
  bool search(int arr[],int low,int high,int key){
-       if(high>=low){
+       while(high>=low){
            int mid=low+(high-low)/2;
            if (arr[mid]==key) return false;
             
@@ -192,7 +206,7 @@ int removeDuplicates(int* A, int n1) {
     
     for (i=1;i<n1;i++)
     {
-        if (A[i-1] != A[i]){
+        if (A[count-1] != A[i]){
             A[count++]=A[i];
         }
     }
@@ -403,7 +417,7 @@ GFG solution :
 
 14.Rearrange Array Alternately
 
-Input : 1,2,3,4,5,6 output:6,15,2,4,3
+Input : 1,2,3,4,5,6 output:6,1,5,2,4,3
 
 https://practice.geeksforgeeks.org/problems/-rearrange-array-alternately-1587115620/1#
 
@@ -2230,6 +2244,388 @@ int josephus(int n, int k)
    return check(n,k) + 1;
    
 }
+
+78 . two sum in O(nlogn) without hashmap
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        
+        vector<int> vect1;
+        
+        //copy nums to vect1
+        for (int i=0; i<nums.size(); i++)
+        vect1.push_back(nums[i]);
+        
+        //sort nums
+        sort(nums.begin(),nums.end());
+        
+        vector<int> res;
+        vector<int> res1;
+        int i=0;
+        int j=nums.size()-1;
+        
+        //capture elemets in res1
+        while (j>i){
+            if (nums[i] + nums[j] == target){
+                res1.push_back(nums[i]);
+                res1.push_back(nums[j]);
+                break;
+            }else if (nums[i] + nums[j] > target){
+                j--;
+            }else {i++;}
+        }
+        
+        //capture index in res using original position in vect1
+        for (int i=0;i<nums.size();i++){
+            if (vect1[i]==res1[0] || vect1[i]==res1[1]){
+                res.push_back(i);
+            }
+        }
+      return res;  
+    }
+};
+
+79. https://leetcode.com/problems/merge-sorted-array/ 
+
+Merge Sorted Array
+
+Share
+You are given two integer arrays nums1 and nums2, sorted in non-decreasing order, and two integers m and n, representing the number of elements in nums1 and nums2 respectively.
+
+Merge nums1 and nums2 into a single array sorted in non-decreasing order.
+
+The final sorted array should not be returned by the function, but instead be stored inside the array nums1. To accommodate this, nums1 has a length of m + n, where the first m elements denote the elements that should be merged, and the last n elements are set to 0 and should be ignored. nums2 has a length of n.
+
+ 
+
+Example 1:
+
+Input: nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3
+Output: [1,2,2,3,5,6]
+Explanation: The arrays we are merging are [1,2,3] and [2,5,6].
+The result of the merge is [1,2,2,3,5,6] with the underlined elements coming from nums1.
+Example 2:
+
+Input: nums1 = [1], m = 1, nums2 = [], n = 0
+Output: [1]
+Explanation: The arrays we are merging are [1] and [].
+The result of the merge is [1].
+Example 3:
+
+Input: nums1 = [0], m = 0, nums2 = [1], n = 1
+Output: [1]
+Explanation: The arrays we are merging are [] and [1].
+The result of the merge is [1].
+Note that because m = 0, there are no elements in nums1. The 0 is only there to ensure the merge result can fit in nums1.
+ 
+
+Constraints:
+
+nums1.length == m + n
+nums2.length == n
+0 <= m, n <= 200
+1 <= m + n <= 200
+-109 <= nums1[i], nums2[j] <= 109
+ 
+
+Follow up: Can you come up with an algorithm that runs in O(m + n) time?
+
+--solution
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        
+        vector<int> nums1copy;
+        
+        for (int i=0;i<m;i++){
+            nums1copy.push_back(nums1[i]);
+        }
+        
+        int p1 = 0;
+        int p2 = 0;
+        
+        for ( int p=0; p < m+n; p++ ){
+            if (p2 >=n || ( p1<m && nums1copy[p1] <= nums2[p2])){
+                nums1[p]=nums1copy[p1];
+                p1++;
+            }else{
+                nums1[p] = nums2[p2];
+                p2++;
+            }
+        }      
+    }
+
+80. https://leetcode.com/problems/best-time-to-buy-and-sell-stock/ 
+
+Best Time to Buy and Sell Stock
+
+Share
+You are given an array prices where prices[i] is the price of a given stock on the ith day.
+
+You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock.
+
+Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.
+
+ 
+
+Example 1:
+
+Input: prices = [7,1,5,3,6,4]
+Output: 5
+Explanation: Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6-1 = 5.
+Note that buying on day 2 and selling on day 1 is not allowed because you must buy before you sell.
+Example 2:
+
+Input: prices = [7,6,4,3,1]
+Output: 0
+Explanation: In this case, no transactions are done and the max profit = 0.
+ 
+
+Constraints:
+
+1 <= prices.length <= 105
+0 <= prices[i] <= 104
+
+--solution1 [ Time : O(n) , space : O(n)]
+    int maxProfit(vector<int>& prices) {
+        int maxp=0;
+        int size = prices.size();
+        int right[size]; // to store all right maximums at any position 
+        int left[size]; // to store all left minimum at any position
+        
+        right[size-1]=prices[size-1]; // rightmost the maximum at last postion 
+        left[0]=prices[0]; // leftmost is the minimum at first postion 
+        
+        //fill right 
+        for (int i=size-2;i>0;i--){
+                right[i]=max(prices[i],right[i+1]);
+        }
+        
+        //fill left 
+        for (int i=1;i<size-1;i++){
+                left[i]=min(prices[i],left[i-1]);
+        }
+        
+        for (int i=0; i < size ; i++){
+            maxp = max(maxp,right[i]-left[i]);
+        }
+     return maxp;
+    }
+
+--solution2 [ Time : O(n) , space : O(1)]
+    int maxProfit(vector<int>& prices) {
+        int maxp=0; // stores maximum profit
+        int minval = prices[0]; //stores minimum value seen so far
+        int size = prices.size();
+        
+        for (int j=1;j<size;j++){
+            maxp = max(maxp,(prices[j]-minval));
+            minval = min(minval,prices[j]);
+        }
+        
+     return maxp;
+    }
+ 
+ 81. https://leetcode.com/problems/intersection-of-two-arrays-ii/submissions/
+
+Intersection of Two Arrays II
+
+Share
+Given two integer arrays nums1 and nums2, return an array of their intersection. Each element in the result must appear as many times as it shows in both arrays and you may return the result in any order.
+
+ 
+
+Example 1:
+
+Input: nums1 = [1,2,2,1], nums2 = [2,2]
+Output: [2,2]
+Example 2:
+
+Input: nums1 = [4,9,5], nums2 = [9,4,9,8,4]
+Output: [4,9]
+Explanation: [9,4] is also accepted.
+ 
+
+Constraints:
+
+1 <= nums1.length, nums2.length <= 1000
+0 <= nums1[i], nums2[i] <= 1000
+ 
+
+Follow up:
+
+What if the given array is already sorted? How would you optimize your algorithm?
+What if nums1's size is small compared to nums2's size? Which algorithm is better?
+What if elements of nums2 are stored on disk, and the memory is limited such that you cannot load all elements into the memory at once? 
+
+--solution
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        
+        vector<int> res;
+        
+        unordered_map<int,int>up;
+        
+        for (int i=0;i<nums2.size();i++){
+            up[nums2[i]] =true;
+        }
+        
+        for (int i=0;i<nums1.size();i++){
+            if (up.find(nums1[i]) != up.end()){
+                res.push_back(nums1[i]);
+                up[nums1[i]] =false;
+            }
+        }
+        
+       // cout << up.size() << "\n";
+       // cout << res.size() << "\n";
+        
+        return res;
+    }
+
+82. https://www.geeksforgeeks.org/find-the-frequency-of-each-element-in-a-sorted-array/ 
+
+print frequency of all the elements of a sorted Array.
+
+solution :
+
+void printFreq(int arr[], int n){
+    int freq=1; int i=1;
+
+    while (i<n){
+        while ( i < n and arr[i] == arr[i-1]){
+            freq++;
+            i++;
+        }
+
+        cout << arr[i] << freq;
+        freq =1;
+        i++;
+
+    }
+    // for array of size 1 and to print last element
+    if (n==1 || arr[n-1] != arr[n-2]){
+        cout << "arr[n-1]" << 1;
+    }
+}
+
+83. count consecutive 1's in a binary Array
+
+int main() {
+	
+	int arr[] = {1,1,1,0,0,0,0,1,1,1,1,1,1}; 
+	int n = 13;
+	
+	int len=0;
+	int maxlen=0;
+	
+	for (int i=0;i<n;i++){
+	    if (arr[i]==0){
+	        len=0;
+	    }else{
+	        len++;
+	        maxlen=max(len,maxlen);
+	    }
+	}
+	cout << "maxlen:" << maxlen;
+	
+}
+
+84. https://www.geeksforgeeks.org/length-of-the-longest-alternating-even-odd-subarray/ 
+
+Length of the longest alternating even odd subarray
+
+Given an array a[] of N integers, the task is to find the length of the longest Alternating Even Odd subarray present in the array. 
+Examples: 
+ 
+
+Input: a[] = {1, 2, 3, 4, 5, 7, 9} 
+Output: 5 
+Explanation: 
+The subarray {1, 2, 3, 4, 5} has alternating even and odd elements.
+Input: a[] = {1, 3, 5} 
+Output: 0 
+Explanation: 
+There is no such alternating sequence possible. 
+
+--solution:
+#include <iostream>
+using namespace std;
+
+int main() {
+	
+	int arr[] = {10,12,8,4}; 
+	int n = 4;
+	
+	int len=1;
+	int maxlen=1;
+	
+	for (int i=1;i<n;i++){
+	    if ((arr[i]%2 ==0 && arr[i-1]%2 ==0) || (arr[i]%2 > 0 and arr[i-1]%2 >0)){
+	        len=1;
+	    }else{
+	        len++;
+	        maxlen=max(len,maxlen);
+	    }
+	}
+	cout << "maxlen:" << maxlen;
+	
+}
+
+85. https://practice.geeksforgeeks.org/problems/max-sum-subarray-of-size-k5313/1# 
+Max Sum Subarray of size K 
+Given an array of integers Arr of size N and a number K. Return the maximum sum of a subarray of size K.
+
+Example 1:
+
+Input:
+N = 4, K = 2
+Arr = [100, 200, 300, 400]
+Output:
+700
+Explanation:
+Arr3  + Arr4 =700,
+which is maximum.
+
+Example 2:
+Input:
+N = 4, K = 4
+Arr = [100, 200, 300, 400]
+Output:
+1000
+Explanation:
+Arr1 + Arr2 + Arr3  
++ Arr4 =1000,
+which is maximum.
+ 
+
+Your Task:
+You don't need to read input or print anything. Your task is to complete the function maximumSumSubarray() which takes the integer k, vector Arr with size N, containing the elements of the array and returns the maximum sum of a subarray of size K.
+
+Expected Time Complexity: O(N)
+Expected Auxiliary Space: O(1)
+ 
+Constraints:
+1<=N<=105
+1<=K<=N
+
+--solution:
+    int maximumSumSubarray(int K, vector<int> &Arr , int N){
+        // code here 
+        int sum=0;
+        
+        for (int i=0;i<K;i++){
+            sum = sum + Arr[i];
+        }
+        
+        int res =sum;
+        
+        for (int i=0;i<N-K;i++){
+            sum = sum + (Arr[i+K] - Arr[i]);
+            res = max(res,sum);
+        }
+        
+        return res;
+    }
+
+
 
 1] Different Bits Sum Pairwise: https://www.interviewbit.com/problems/different-bits-sum-pairwise/#
 2] Valid Parentheses: https://leetcode.com/problems/valid-parentheses/

@@ -1356,7 +1356,7 @@ product_id,report_year,total_amount
 3,2019,31
 3,2020,31
 
-
+--sol1 
 with cte(product_id,period_start,period_end,avg) as 
   (
     select product_id,period_start,period_end,average_daily_sales from sales --anchor query
@@ -1369,6 +1369,22 @@ select product_id,to_char(period_start,'YYYY'),sum(avg)
  from cte --where product_id=3
 group by product_id,to_char(period_start,'YYYY')
 order by product_id;
+
+--sol2
+with cte as (
+    select min(period_start) period_start,max(period_end) period_end
+     from Sales
+     union all
+    select dateadd(day,1,period_start),period_end from cte
+    where period_start < period_end
+) select s.product_id,product_name,cast(year(c.period_start) as varchar) report_year,sum(s.average_daily_sales) total_amount
+    from Sales s 
+     inner join Product p on s.product_id = p.product_id
+     inner join cte c on c.period_start between s.period_start and s.period_end
+  group by s.product_id,product_name,year(c.period_start) 
+  order by s.product_id,year(c.period_start) 
+  option (maxrecursion 0)
+
 
 33. --Recommendation system based on - product pairs most commonly purchased together.
 
@@ -2128,19 +2144,12 @@ Output:
 Follow up: If it is unknown which continent has the most students, could you write a query to generate the student report?
 
 --solution :
-Select
- distinct 
- min(case when continent = 'America' then name else null end) as "America",
- min(case when continent = 'Asia' then name else null end) as "Asia",
- min(case when continent = 'Europe' then name else null end) as "Europe"
-from ( 
-      select dense_rank() over(partition by continent order by name) rnk,
-             name,
-             continent
-       from student 
-    ) T
-group by rnk
-order by 1,2,3
+SELECT America, Asia, Europe
+FROM (SELECT name America, ROW_NUMBER() OVER(ORDER BY name) rnk FROM student WHERE continent = 'America') t1
+LEFT JOIN (SELECT name Asia, ROW_NUMBER() OVER(ORDER BY name) rnk FROM student WHERE continent = 'Asia') t2
+ON t1.rnk = t2.rnk
+LEFT JOIN (SELECT name Europe, ROW_NUMBER() OVER(ORDER BY name) rnk FROM student WHERE continent = 'Europe') t3
+ON t1.rnk = t3.rnk
 
 
 44. https://leetcode.com/problems/leetcodify-friends-recommendations/
@@ -2784,4 +2793,1024 @@ CUSTOMER_ID     BUDGET NO_OF_PRODUCTS products
 3 rows selected.
 
 SQL>
+
+54. https://leetcode.com/problems/sales-person/ 
+
+Sales Person
+
+Table: SalesPerson
+
++-----------------+---------+
+| Column Name     | Type    |
++-----------------+---------+
+| sales_id        | int     |
+| name            | varchar |
+| salary          | int     |
+| commission_rate | int     |
+| hire_date       | date    |
++-----------------+---------+
+sales_id is the primary key column for this table.
+Each row of this table indicates the name and the ID of a salesperson alongside their salary, commission rate, and hire date.
+ 
+
+Table: Company
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| com_id      | int     |
+| name        | varchar |
+| city        | varchar |
++-------------+---------+
+com_id is the primary key column for this table.
+Each row of this table indicates the name and the ID of a company and the city in which the company is located.
+ 
+
+Table: Orders
+
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| order_id    | int  |
+| order_date  | date |
+| com_id      | int  |
+| sales_id    | int  |
+| amount      | int  |
++-------------+------+
+order_id is the primary key column for this table.
+com_id is a foreign key to com_id from the Company table.
+sales_id is a foreign key to com_id from the SalesPerson table.
+Each row of this table contains information about one order. This includes the ID of the company, the ID of the salesperson, the date of the order, and the amount paid.
+ 
+
+Write an SQL query to report the names of all the salespersons who did not have any orders related to the company with the name "RED".
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+SalesPerson table:
++----------+------+--------+-----------------+------------+
+| sales_id | name | salary | commission_rate | hire_date  |
++----------+------+--------+-----------------+------------+
+| 1        | John | 100000 | 6               | 4/1/2006   |
+| 2        | Amy  | 12000  | 5               | 5/1/2010   |
+| 3        | Mark | 65000  | 12              | 12/25/2008 |
+| 4        | Pam  | 25000  | 25              | 1/1/2005   |
+| 5        | Alex | 5000   | 10              | 2/3/2007   |
++----------+------+--------+-----------------+------------+
+Company table:
++--------+--------+----------+
+| com_id | name   | city     |
++--------+--------+----------+
+| 1      | RED    | Boston   |
+| 2      | ORANGE | New York |
+| 3      | YELLOW | Boston   |
+| 4      | GREEN  | Austin   |
++--------+--------+----------+
+Orders table:
++----------+------------+--------+----------+--------+
+| order_id | order_date | com_id | sales_id | amount |
++----------+------------+--------+----------+--------+
+| 1        | 1/1/2014   | 3      | 4        | 10000  |
+| 2        | 2/1/2014   | 4      | 5        | 5000   |
+| 3        | 3/1/2014   | 1      | 1        | 50000  |
+| 4        | 4/1/2014   | 1      | 4        | 25000  |
++----------+------------+--------+----------+--------+
+Output: 
++------+
+| name |
++------+
+| Amy  |
+| Mark |
+| Alex |
++------+
+Explanation: 
+According to orders 3 and 4 in the Orders table, it is easy to tell that only salesperson John and Pam have sales to company RED, so we report all the other names in the table salesperson.
+
+--solution
+select name from 
+SalesPerson where sales_id not in (
+select distinct sales_id 
+ from Orders o
+where com_id in ( 
+    select com_id from company where name = 'RED'))
+
+
+55. https://leetcode.com/problems/dynamic-pivoting-of-a-table/ 
+
+Dynamic Pivoting of a Table
+
+Table: Products
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| product_id  | int     |
+| store       | varchar |
+| price       | int     |
++-------------+---------+
+(product_id, store) is the primary key for this table.
+Each row of this table indicates the price of product_id in store.
+There will be at most 30 different stores in the table.
+price is the price of the product at this store.
+ 
+
+Important note: This problem targets those who have a good experience with SQL. If you are a beginner, we recommend that you skip it for now.
+
+Implement the procedure PivotProducts to reorganize the Products table so that each row has the id of one product and its price in each store. The price should be null if the product is not sold in a store. The columns of the table should contain each store and they should be sorted in lexicographical order.
+
+The procedure should return the table after reorganizing it.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Products table:
++------------+----------+-------+
+| product_id | store    | price |
++------------+----------+-------+
+| 1          | Shop     | 110   |
+| 1          | LC_Store | 100   |
+| 2          | Nozama   | 200   |
+| 2          | Souq     | 190   |
+| 3          | Shop     | 1000  |
+| 3          | Souq     | 1900  |
++------------+----------+-------+
+Output: 
++------------+----------+--------+------+------+
+| product_id | LC_Store | Nozama | Shop | Souq |
++------------+----------+--------+------+------+
+| 1          | 100      | null   | 110  | null |
+| 2          | null     | 200    | null | 190  |
+| 3          | null     | null   | 1000 | 1900 |
++------------+----------+--------+------+------+
+Explanation: 
+We have 4 stores: Shop, LC_Store, Nozama, and Souq. We first order them lexicographically to be: LC_Store, Nozama, Shop, and Souq.
+Now, for product 1, the price in LC_Store is 100 and in Shop is 110. For the other two stores, the product is not sold so we set the price as null.
+Similarly, product 2 has a price of 200 in Nozama and 190 in Souq. It is not sold in the other two stores.
+For product 3, the price is 1000 in Shop and 1900 in Souq. It is not sold in the other two stores.
+
+--solution1
+ CREATE FUNCTION PivotProducts
+ RETURN SYS_REFCURSOR IS result SYS_REFCURSOR;
+ BEGIN
+     /* Write your PL/SQL query statement below */
+    open result for select * from (
+        select product_id "product_id",store,price
+        from Products
+    )
+    pivot (
+        max(price)
+     for (store) in (
+         'LC_Store' "LC_Store",
+         'Nozama' "Nozama",
+         'Shop' "Shop",
+         'Souq' "Souq")
+    );
+    
+     RETURN result;
+END;
+
+56. https://leetcode.com/problems/get-the-second-most-recent-activity/ 
+
+Get the Second Most Recent Activity
+
+Table: UserActivity
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| username      | varchar |
+| activity      | varchar |
+| startDate     | Date    |
+| endDate       | Date    |
++---------------+---------+
+There is no primary key for this table. It may contain duplicates.
+This table contains information about the activity performed by each user in a period of time.
+A person with username performed an activity from startDate to endDate.
+ 
+
+Write an SQL query to show the second most recent activity of each user.
+
+If the user only has one activity, return that one. A user cannot perform more than one activity at the same time.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+UserActivity table:
++------------+--------------+-------------+-------------+
+| username   | activity     | startDate   | endDate     |
++------------+--------------+-------------+-------------+
+| Alice      | Travel       | 2020-02-12  | 2020-02-20  |
+| Alice      | Dancing      | 2020-02-21  | 2020-02-23  |
+| Alice      | Travel       | 2020-02-24  | 2020-02-28  |
+| Bob        | Travel       | 2020-02-11  | 2020-02-18  |
++------------+--------------+-------------+-------------+
+Output: 
++------------+--------------+-------------+-------------+
+| username   | activity     | startDate   | endDate     |
++------------+--------------+-------------+-------------+
+| Alice      | Dancing      | 2020-02-21  | 2020-02-23  |
+| Bob        | Travel       | 2020-02-11  | 2020-02-18  |
++------------+--------------+-------------+-------------+
+Explanation: 
+The most recent activity of Alice is Travel from 2020-02-24 to 2020-02-28, before that she was dancing from 2020-02-21 to 2020-02-23.
+Bob only has one record, we just take that one.
+
+--solution
+/* Write your PL/SQL query statement below */
+
+select username,activity,startdate,enddate from (
+select username,activity,
+    to_char(startdate,'yyyy-mm-dd') startdate ,
+    to_char(enddate,'yyyy-mm-dd') enddate,
+    dense_rank() over(partition by username order by endDate desc) rnk,
+    count(distinct activity) over(partition by username) cnt
+ from UserActivity ) where rnk=2 or cnt =1
+
+ 57. https://leetcode.com/problems/number-of-trusted-contacts-of-a-customer/ 
+ Number of Trusted Contacts of a Customer
+
+Table: Customers
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| customer_id   | int     |
+| customer_name | varchar |
+| email         | varchar |
++---------------+---------+
+customer_id is the primary key for this table.
+Each row of this table contains the name and the email of a customer of an online shop.
+ 
+
+Table: Contacts
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user_id       | id      |
+| contact_name  | varchar |
+| contact_email | varchar |
++---------------+---------+
+(user_id, contact_email) is the primary key for this table.
+Each row of this table contains the name and email of one contact of customer with user_id.
+This table contains information about people each customer trust. The contact may or may not exist in the Customers table.
+ 
+
+Table: Invoices
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| invoice_id   | int     |
+| price        | int     |
+| user_id      | int     |
++--------------+---------+
+invoice_id is the primary key for this table.
+Each row of this table indicates that user_id has an invoice with invoice_id and a price.
+ 
+
+Write an SQL query to find the following for each invoice_id:
+
+customer_name: The name of the customer the invoice is related to.
+price: The price of the invoice.
+contacts_cnt: The number of contacts related to the customer.
+trusted_contacts_cnt: The number of contacts related to the customer and at the same time they are customers to the shop. (i.e their email exists in the Customers table.)
+Return the result table ordered by invoice_id.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Customers table:
++-------------+---------------+--------------------+
+| customer_id | customer_name | email              |
++-------------+---------------+--------------------+
+| 1           | Alice         | alice@leetcode.com |
+| 2           | Bob           | bob@leetcode.com   |
+| 13          | John          | john@leetcode.com  |
+| 6           | Alex          | alex@leetcode.com  |
++-------------+---------------+--------------------+
+Contacts table:
++-------------+--------------+--------------------+
+| user_id     | contact_name | contact_email      |
++-------------+--------------+--------------------+
+| 1           | Bob          | bob@leetcode.com   |
+| 1           | John         | john@leetcode.com  |
+| 1           | Jal          | jal@leetcode.com   |
+| 2           | Omar         | omar@leetcode.com  |
+| 2           | Meir         | meir@leetcode.com  |
+| 6           | Alice        | alice@leetcode.com |
++-------------+--------------+--------------------+
+Invoices table:
++------------+-------+---------+
+| invoice_id | price | user_id |
++------------+-------+---------+
+| 77         | 100   | 1       |
+| 88         | 200   | 1       |
+| 99         | 300   | 2       |
+| 66         | 400   | 2       |
+| 55         | 500   | 13      |
+| 44         | 60    | 6       |
++------------+-------+---------+
+Output: 
++------------+---------------+-------+--------------+----------------------+
+| invoice_id | customer_name | price | contacts_cnt | trusted_contacts_cnt |
++------------+---------------+-------+--------------+----------------------+
+| 44         | Alex          | 60    | 1            | 1                    |
+| 55         | John          | 500   | 0            | 0                    |
+| 66         | Bob           | 400   | 2            | 0                    |
+| 77         | Alice         | 100   | 3            | 2                    |
+| 88         | Alice         | 200   | 3            | 2                    |
+| 99         | Bob           | 300   | 2            | 0                    |
++------------+---------------+-------+--------------+----------------------+
+Explanation: 
+Alice has three contacts, two of them are trusted contacts (Bob and John).
+Bob has two contacts, none of them is a trusted contact.
+Alex has one contact and it is a trusted contact (Alice).
+John doesnot have any contacts.
+
+--solution
+select invoice_id,customer_name,price,
+   count(contact_name) "contacts_cnt",
+    sum(
+        case 
+            when contact_name in (select customer_name from Customers)
+            then 1 else 0
+        end) "trusted_contacts_cnt"
+ from Invoices i inner join Customers c on i.user_id = c.customer_id
+  left join Contacts ct on c.customer_id = ct.user_id
+group by invoice_id,customer_name,price
+order by invoice_id
+
+58. https://leetcode.com/problems/game-play-analysis-v/ 
+
+Game Play Analysis V
+
+Table: Activity
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| player_id    | int     |
+| device_id    | int     |
+| event_date   | date    |
+| games_played | int     |
++--------------+---------+
+(player_id, event_date) is the primary key of this table.
+This table shows the activity of players of some games.
+Each row is a record of a player who logged in and played a number of games (possibly 0) before logging out on someday using some device.
+ 
+
+The install date of a player is the first login day of that player.
+
+We define day one retention of some date x to be the number of players whose install date is x and they logged back in on the day right after x, divided by the number of players whose install date is x, rounded to 2 decimal places.
+
+Write an SQL query to report for each install date, the number of players that installed the game on that day, and the day one retention.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Activity table:
++-----------+-----------+------------+--------------+
+| player_id | device_id | event_date | games_played |
++-----------+-----------+------------+--------------+
+| 1         | 2         | 2016-03-01 | 5            |
+| 1         | 2         | 2016-03-02 | 6            |
+| 2         | 3         | 2017-06-25 | 1            |
+| 3         | 1         | 2016-03-01 | 0            |
+| 3         | 4         | 2016-07-03 | 5            |
++-----------+-----------+------------+--------------+
+Output: 
++------------+----------+----------------+
+| install_dt | installs | Day1_retention |
++------------+----------+----------------+
+| 2016-03-01 | 2        | 0.50           |
+| 2017-06-25 | 1        | 0.00           |
++------------+----------+----------------+
+Explanation: 
+Player 1 and 3 installed the game on 2016-03-01 but only player 1 logged back in on 2016-03-02 so the day 1 retention of 2016-03-01 is 1 / 2 = 0.50
+Player 2 installed the game on 2017-06-25 but didnot log back in on 2017-06-26 so the day 1 retention of 2017-06-25 is 0 / 1 = 0.00
+
+--solution
+/* Write your PL/SQL query statement below */
+--calculate install date
+-- count number of installs on that date (y)
+-- count players login next day to install date (x) 
+-- x/y for each install date
+
+with temp1 as ( --calculate install dates
+select player_id,min(event_date) install_dt
+ from Activity
+group by player_id
+) select to_char(install_dt,'yyyy-mm-dd') install_dt,count(1) installs,
+   round(count(distinct a.player_id) / count(1),2) "Day1_retention"
+ from temp1 left join activity a 
+   on a.event_date = temp1.install_dt + interval '1' day
+    and a.player_id = temp1.player_id
+ group by to_char(install_dt,'yyyy-mm-dd')
+
+
+59. https://leetcode.com/problems/unpopular-books/ 
+
+Unpopular Books
+
+Table: Books
+
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| book_id        | int     |
+| name           | varchar |
+| available_from | date    |
++----------------+---------+
+book_id is the primary key of this table.
+ 
+
+Table: Orders
+
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| order_id       | int     |
+| book_id        | int     |
+| quantity       | int     |
+| dispatch_date  | date    |
++----------------+---------+
+order_id is the primary key of this table.
+book_id is a foreign key to the Books table.
+ 
+
+Write an SQL query that reports the books that have sold less than 10 copies in the last year, excluding books that have been available for less than one month from today. Assume today is 2019-06-23.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Books table:
++---------+--------------------+----------------+
+| book_id | name               | available_from |
++---------+--------------------+----------------+
+| 1       | "Kalila And Demna" | 2010-01-01     |
+| 2       | "28 Letters"       | 2012-05-12     |
+| 3       | "The Hobbit"       | 2019-06-10     |
+| 4       | "13 Reasons Why"   | 2019-06-01     |
+| 5       | "The Hunger Games" | 2008-09-21     |
++---------+--------------------+----------------+
+Orders table:
++----------+---------+----------+---------------+
+| order_id | book_id | quantity | dispatch_date |
++----------+---------+----------+---------------+
+| 1        | 1       | 2        | 2018-07-26    |
+| 2        | 1       | 1        | 2018-11-05    |
+| 3        | 3       | 8        | 2019-06-11    |
+| 4        | 4       | 6        | 2019-06-05    |
+| 5        | 4       | 5        | 2019-06-20    |
+| 6        | 5       | 9        | 2009-02-02    |
+| 7        | 5       | 8        | 2010-04-13    |
++----------+---------+----------+---------------+
+Output: 
++-----------+--------------------+
+| book_id   | name               |
++-----------+--------------------+
+| 1         | "Kalila And Demna" |
+| 2         | "28 Letters"       |
+| 5         | "The Hunger Games" |
++-----------+--------------------+
+
+--solution
+/* Write your PL/SQL query statement below */
+
+with temp as (
+select b.book_id book_id ,name,o.quantity quantity,o.dispatch_date ,b.available_from
+ from Books b 
+ left join Orders o on b.book_id = o.book_id 
+    ) 
+    
+-- all the books
+select book_id,name from Books 
+
+MINUS 
+
+--books sold 10 copies in last year
+
+select book_id,name 
+ from temp 
+where dispatch_date 
+    between to_date('2019-06-23') - interval '1' year
+     and to_date('2019-06-23')
+group by book_id,name
+having sum(quantity) >=10
+
+MINUS 
+
+--books available only from last month
+select book_id,name 
+ from temp 
+where available_from
+    between to_date('2019-06-23') - interval '1' month
+     and to_date('2019-06-23')
+
+
+60. https://leetcode.com/problems/new-users-daily-count/ 
+
+New Users Daily Count
+
+SQL Schema
+Table: Traffic
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user_id       | int     |
+| activity      | enum    |
+| activity_date | date    |
++---------------+---------+
+There is no primary key for this table, it may have duplicate rows.
+The activity column is an ENUM type of ('login', 'logout', 'jobs', 'groups', 'homepage').
+ 
+
+Write an SQL query to reports for every date within at most 90 days from today, the number of users that logged in for the first time on that date. Assume today is 2019-06-30.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Traffic table:
++---------+----------+---------------+
+| user_id | activity | activity_date |
++---------+----------+---------------+
+| 1       | login    | 2019-05-01    |
+| 1       | homepage | 2019-05-01    |
+| 1       | logout   | 2019-05-01    |
+| 2       | login    | 2019-06-21    |
+| 2       | logout   | 2019-06-21    |
+| 3       | login    | 2019-01-01    |
+| 3       | jobs     | 2019-01-01    |
+| 3       | logout   | 2019-01-01    |
+| 4       | login    | 2019-06-21    |
+| 4       | groups   | 2019-06-21    |
+| 4       | logout   | 2019-06-21    |
+| 5       | login    | 2019-03-01    |
+| 5       | logout   | 2019-03-01    |
+| 5       | login    | 2019-06-21    |
+| 5       | logout   | 2019-06-21    |
++---------+----------+---------------+
+Output: 
++------------+-------------+
+| login_date | user_count  |
++------------+-------------+
+| 2019-05-01 | 1           |
+| 2019-06-21 | 2           |
++------------+-------------+
+Explanation: 
+Note that we only care about dates with non zero user count.
+The user with id 5 first logged in on 2019-03-01 so he is not counted on 2019-06-21.
+
+--solution
+/* Write your PL/SQL query statement below */
+
+select to_char(fdate,'yyyy-mm-dd') login_date,count(distinct user_id) user_count
+ from (
+select user_id,min(activity_date) fdate
+ from Traffic 
+where activity = 'login'
+group by user_id
+)
+where fdate >= to_date('2019-06-30') - interval '90' day
+group by to_char(fdate,'yyyy-mm-dd')
+
+
+61. https://leetcode.com/problems/reported-posts-ii/
+
+Reported Posts II
+
+Table: Actions
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user_id       | int     |
+| post_id       | int     |
+| action_date   | date    | 
+| action        | enum    |
+| extra         | varchar |
++---------------+---------+
+There is no primary key for this table, it may have duplicate rows.
+The action column is an ENUM type of ('view', 'like', 'reaction', 'comment', 'report', 'share').
+The extra column has optional information about the action, such as a reason for the report or a type of reaction.
+ 
+
+Table: Removals
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| post_id       | int     |
+| remove_date   | date    | 
++---------------+---------+
+post_id is the primary key of this table.
+Each row in this table indicates that some post was removed due to being reported or as a result of an admin review.
+ 
+
+Write an SQL query to find the average daily percentage of posts that got removed after being reported as spam, rounded to 2 decimal places.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Actions table:
++---------+---------+-------------+--------+--------+
+| user_id | post_id | action_date | action | extra  |
++---------+---------+-------------+--------+--------+
+| 1       | 1       | 2019-07-01  | view   | null   |
+| 1       | 1       | 2019-07-01  | like   | null   |
+| 1       | 1       | 2019-07-01  | share  | null   |
+| 2       | 2       | 2019-07-04  | view   | null   |
+| 2       | 2       | 2019-07-04  | report | spam   |
+| 3       | 4       | 2019-07-04  | view   | null   |
+| 3       | 4       | 2019-07-04  | report | spam   |
+| 4       | 3       | 2019-07-02  | view   | null   |
+| 4       | 3       | 2019-07-02  | report | spam   |
+| 5       | 2       | 2019-07-03  | view   | null   |
+| 5       | 2       | 2019-07-03  | report | racism |
+| 5       | 5       | 2019-07-03  | view   | null   |
+| 5       | 5       | 2019-07-03  | report | racism |
++---------+---------+-------------+--------+--------+
+Removals table:
++---------+-------------+
+| post_id | remove_date |
++---------+-------------+
+| 2       | 2019-07-20  |
+| 3       | 2019-07-18  |
++---------+-------------+
+Output: 
++-----------------------+
+| average_daily_percent |
++-----------------------+
+| 75.00                 |
++-----------------------+
+Explanation: 
+The percentage for 2019-07-04 is 50% because only one post of two spam reported posts were removed.
+The percentage for 2019-07-02 is 100% because one post was reported as spam and it was removed.
+The other days had no spam reports so the average is (50 + 100) / 2 = 75%
+Note that the output is only one number and that we do not care about the remove dates.
+
+--solution
+/* Write your PL/SQL query statement below */
+
+
+with temp as (
+select to_char(action_date,'yyyy-mm-dd'),(count(distinct r.post_id) / count(distinct a.post_id)) *100 daily_percentage_removed
+from Actions a
+  left join Removals r on a.post_id = r.post_id and a.action_date < r.remove_date
+ where extra = 'spam' and action = 'report'
+group by to_char(action_date,'yyyy-mm-dd')
+) 
+select round(avg(daily_percentage_removed),2) average_daily_percent from temp
+
+-- select round(avg(daily_percentage_removed),2) average_daily_percent 
+-- from temp
+
+-- with daily_spams as (
+--     select to_char(action_date,'yyyy-mm-dd'),count(distinct r.post_id) / count(distinct a.post_id) * 100 res
+--      from Actions a 
+--     left join Removals r on a.post_id = r.post_id and a.action_date < r.remove_date 
+--     where extra = 'spam' and action = 'report'
+--  group by to_char(action_date,'yyyy-mm-dd')
+-- ) select round(avg(res),2) average_daily_percent from daily_spams
+
+
+62. https://leetcode.com/problems/product-price-at-a-given-date/ 
+
+Product Price at a Given Date
+
+SQL Schema
+Table: Products
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| product_id    | int     |
+| new_price     | int     |
+| change_date   | date    |
++---------------+---------+
+(product_id, change_date) is the primary key of this table.
+Each row of this table indicates that the price of some product was changed to a new price at some date.
+ 
+
+Write an SQL query to find the prices of all products on 2019-08-16. Assume the price of all products before any change is 10.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Products table:
++------------+-----------+-------------+
+| product_id | new_price | change_date |
++------------+-----------+-------------+
+| 1          | 20        | 2019-08-14  |
+| 2          | 50        | 2019-08-14  |
+| 1          | 30        | 2019-08-15  |
+| 1          | 35        | 2019-08-16  |
+| 2          | 65        | 2019-08-17  |
+| 3          | 20        | 2019-08-18  |
++------------+-----------+-------------+
+Output: 
++------------+-------+
+| product_id | price |
++------------+-------+
+| 2          | 50    |
+| 1          | 35    |
+| 3          | 10    |
++------------+-------+
+
+--solution
+with temp as (
+    select product_id,new_price,change_date
+     from Products
+    union all
+    --to make sure all the products have price as 10 as on or before 2019-08-16 if not changed
+    select distinct product_id,10,to_date('1900-01-01')
+     from Products
+ ),
+ temp2 as ( select product_id,new_price price,
+    dense_rank() over(partition by product_id order by change_date desc) rnk  -- take last price 
+   from temp where change_date <= '2019-08-16' )
+ select product_id,price 
+  from temp2 where rnk=1
+
+
+63. https://leetcode.com/problems/report-contiguous-dates/ 
+
+Report Contiguous Dates
+
+SQL Schema
+Table: Failed
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| fail_date    | date    |
++--------------+---------+
+fail_date is the primary key for this table.
+This table contains the days of failed tasks.
+ 
+
+Table: Succeeded
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| success_date | date    |
++--------------+---------+
+success_date is the primary key for this table.
+This table contains the days of succeeded tasks.
+ 
+
+A system is running one task every day. Every task is independent of the previous tasks. The tasks can fail or succeed.
+
+Write an SQL query to generate a report of period_state for each continuous interval of days in the period from 2019-01-01 to 2019-12-31.
+
+period_state is 'failed' if tasks in this interval failed or 'succeeded' if tasks in this interval succeeded. Interval of days are retrieved as start_date and end_date.
+
+Return the result table ordered by start_date.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Failed table:
++-------------------+
+| fail_date         |
++-------------------+
+| 2018-12-28        |
+| 2018-12-29        |
+| 2019-01-04        |
+| 2019-01-05        |
++-------------------+
+Succeeded table:
++-------------------+
+| success_date      |
++-------------------+
+| 2018-12-30        |
+| 2018-12-31        |
+| 2019-01-01        |
+| 2019-01-02        |
+| 2019-01-03        |
+| 2019-01-06        |
++-------------------+
+Output: 
++--------------+--------------+--------------+
+| period_state | start_date   | end_date     |
++--------------+--------------+--------------+
+| succeeded    | 2019-01-01   | 2019-01-03   |
+| failed       | 2019-01-04   | 2019-01-05   |
+| succeeded    | 2019-01-06   | 2019-01-06   |
++--------------+--------------+--------------+
+Explanation: 
+The report ignored the system state in 2018 as we care about the system in the period 2019-01-01 to 2019-12-31.
+From 2019-01-01 to 2019-01-03 all tasks succeeded and the system state was "succeeded".
+From 2019-01-04 to 2019-01-05 all tasks failed and the system state was "failed".
+From 2019-01-06 to 2019-01-06 all tasks succeeded and the system state was "succeeded".
+
+--solution :
+/* Write your PL/SQL query statement below */
+
+with temp as (
+select 'failed' period_state, fail_date ed
+ from failed where fail_date between '2019-01-01' and '2019-12-31'
+union 
+select 'succeeded' period_state, success_date 
+ from succeeded where success_date between '2019-01-01' and '2019-12-31'
+),
+temp1 as ( select period_state,ed,
+    ed - dense_rank() over(partition by period_state order by ed) flag 
+  from temp )
+select period_state,to_char(min(ed),'yyyy-mm-dd') start_date,
+  to_char(max(ed),'yyyy-mm-dd') end_date
+ from temp1 
+group by period_state,flag
+order by start_date
+ 
+64. https://leetcode.com/problems/number-of-transactions-per-visit/ 
+
+Number of Transactions per Visit
+
+SQL Schema
+Table: Visits
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user_id       | int     |
+| visit_date    | date    |
++---------------+---------+
+(user_id, visit_date) is the primary key for this table.
+Each row of this table indicates that user_id has visited the bank in visit_date.
+ 
+
+Table: Transactions
+
++------------------+---------+
+| Column Name      | Type    |
++------------------+---------+
+| user_id          | int     |
+| transaction_date | date    |
+| amount           | int     |
++------------------+---------+
+There is no primary key for this table, it may contain duplicates.
+Each row of this table indicates that user_id has done a transaction of amount in transaction_date.
+It is guaranteed that the user has visited the bank in the transaction_date.(i.e The Visits table contains (user_id, transaction_date) in one row)
+ 
+
+A bank wants to draw a chart of the number of transactions bank visitors did in one visit to the bank and the corresponding number of visitors who have done this number of transaction in one visit.
+
+Write an SQL query to find how many users visited the bank and didnot do any transactions, how many visited the bank and did one transaction and so on.
+
+The result table will contain two columns:
+
+transactions_count which is the number of transactions done in one visit.
+visits_count which is the corresponding number of users who did transactions_count in one visit to the bank.
+transactions_count should take all values from 0 to max(transactions_count) done by one or more users.
+
+Return the result table ordered by transactions_count.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+
+Input: 
+Visits table:
++---------+------------+
+| user_id | visit_date |
++---------+------------+
+| 1       | 2020-01-01 |
+| 2       | 2020-01-02 |
+| 12      | 2020-01-01 |
+| 19      | 2020-01-03 |
+| 1       | 2020-01-02 |
+| 2       | 2020-01-03 |
+| 1       | 2020-01-04 |
+| 7       | 2020-01-11 |
+| 9       | 2020-01-25 |
+| 8       | 2020-01-28 |
++---------+------------+
+Transactions table:
++---------+------------------+--------+
+| user_id | transaction_date | amount |
++---------+------------------+--------+
+| 1       | 2020-01-02       | 120    |
+| 2       | 2020-01-03       | 22     |
+| 7       | 2020-01-11       | 232    |
+| 1       | 2020-01-04       | 7      |
+| 9       | 2020-01-25       | 33     |
+| 9       | 2020-01-25       | 66     |
+| 8       | 2020-01-28       | 1      |
+| 9       | 2020-01-25       | 99     |
++---------+------------------+--------+
+Output: 
++--------------------+--------------+
+| transactions_count | visits_count |
++--------------------+--------------+
+| 0                  | 4            |
+| 1                  | 5            |
+| 2                  | 0            |
+| 3                  | 1            |
++--------------------+--------------+
+Explanation: The chart drawn for this example is shown above.
+* For transactions_count = 0, The visits (1, "2020-01-01"), (2, "2020-01-02"), (12, "2020-01-01") and (19, "2020-01-03") did no transactions so visits_count = 4.
+* For transactions_count = 1, The visits (2, "2020-01-03"), (7, "2020-01-11"), (8, "2020-01-28"), (1, "2020-01-02") and (1, "2020-01-04") did one transaction so visits_count = 5.
+* For transactions_count = 2, No customers visited the bank and did two transactions so visits_count = 0.
+* For transactions_count = 3, The visit (9, "2020-01-25") did three transactions so visits_count = 1.
+* For transactions_count >= 4, No customers visited the bank and did more than three transactions so we will stop at transactions_count = 3
+
+--solution
+/* Write your PL/SQL query statement below */
+
+with temp1 as (
+select transaction_date,user_id,count(1) transactions_count
+ from Transactions
+group by transaction_date,user_id
+),
+temp2 as ( select coalesce(transactions_count,0) transactions_count,
+          count(visit_date) visits_count
+  from Visits v 
+   left join temp1 t on v.visit_date = t.transaction_date and v.user_id = t.user_id
+  group by coalesce(transactions_count,0))
+--this is to get the list of number of transactions (1,2,3,4, etc) until the max number of transactions from the prev cte
+, cte_tran_cnt(cnt,max_cnt) as (
+select 0 as cnt, max(transactions_count) as max_cnt
+from temp2
+ union all
+ select cnt +1, max_cnt
+ from cte_tran_cnt
+ where cnt < max_cnt
+ ) select cnt transactions_count,coalesce(visits_count,0) visits_count
+   from cte_tran_cnt 
+    left join temp2 on cte_tran_cnt.cnt = temp2.transactions_count
+ order by cnt
+
+ 
+
+
+
+
+
+
+
+
+
+
 
