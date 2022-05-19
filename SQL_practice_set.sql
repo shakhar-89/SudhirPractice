@@ -4389,3 +4389,499 @@ from cte c
  group by yr,month
  order by yr,month
 
+69. https://leetcode.com/problems/find-the-subtasks-that-did-not-execute/ 
+
+Find the Subtasks That Did Not Execute
+
+Hard
+
+Table: Tasks
+
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| task_id        | int     |
+| subtasks_count | int     |
++----------------+---------+
+task_id is the primary key for this table.
+Each row in this table indicates that task_id was divided into subtasks_count subtasks labeled from 1 to subtasks_count.
+It is guaranteed that 2 <= subtasks_count <= 20.
+ 
+
+Table: Executed
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| task_id       | int     |
+| subtask_id    | int     |
++---------------+---------+
+(task_id, subtask_id) is the primary key for this table.
+Each row in this table indicates that for the task task_id, the subtask with ID subtask_id was executed successfully.
+It is guaranteed that subtask_id <= subtasks_count for each task_id.
+ 
+
+Write an SQL query to report the IDs of the missing subtasks for each task_id.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Tasks table:
++---------+----------------+
+| task_id | subtasks_count |
++---------+----------------+
+| 1       | 3              |
+| 2       | 2              |
+| 3       | 4              |
++---------+----------------+
+Executed table:
++---------+------------+
+| task_id | subtask_id |
++---------+------------+
+| 1       | 2          |
+| 3       | 1          |
+| 3       | 2          |
+| 3       | 3          |
+| 3       | 4          |
++---------+------------+
+Output: 
++---------+------------+
+| task_id | subtask_id |
++---------+------------+
+| 1       | 1          |
+| 1       | 3          |
+| 2       | 1          |
+| 2       | 2          |
++---------+------------+
+Explanation: 
+Task 1 was divided into 3 subtasks (1, 2, 3). Only subtask 2 was executed successfully, so we include (1, 1) and (1, 3) in the answer.
+Task 2 was divided into 2 subtasks (1, 2). No subtask was executed successfully, so we include (2, 1) and (2, 2) in the answer.
+Task 3 was divided into 4 subtasks (1, 2, 3, 4). All of the subtasks were executed successfully.
+
+--solution
+/* Write your PL/SQL query statement below */
+
+with cte(tid,stid,max_stid) as (
+    select task_id,1,subtasks_count from Tasks
+    union all
+    select tid,stid + 1,max_stid from cte 
+    where stid < max_stid
+) select tid task_id ,stid subtask_id from cte c 
+  where not exists (
+      select 1 from Executed e 
+       where e.task_id=c.tid and e.subtask_id=c.stid
+  )
+order by tid,stid
+
+70. https://leetcode.com/problems/page-recommendations-ii/ 
+
+Page Recommendations II
+
+SQL Schema
+Table: Friendship
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user1_id      | int     |
+| user2_id      | int     |
++---------------+---------+
+(user1_id, user2_id) is the primary key for this table.
+Each row of this table indicates that the users user1_id and user2_id are friends.
+ 
+
+Table: Likes
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| user_id     | int     |
+| page_id     | int     |
++-------------+---------+
+(user_id, page_id) is the primary key for this table.
+Each row of this table indicates that user_id likes page_id.
+ 
+
+You are implementing a page recommendation system for a social media website. Your system will recommended a page to user_id if the page is liked by at least one friend of user_id and is not liked by user_id.
+
+Write an SQL query to find all the possible page recommendations for every user. Each recommendation should appear as a row in the result table with these columns:
+
+user_id: The ID of the user that your system is making the recommendation to.
+page_id: The ID of the page that will be recommended to user_id.
+friends_likes: The number of the friends of user_id that like page_id.
+Return result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Friendship table:
++----------+----------+
+| user1_id | user2_id |
++----------+----------+
+| 1        | 2        |
+| 1        | 3        |
+| 1        | 4        |
+| 2        | 3        |
+| 2        | 4        |
+| 2        | 5        |
+| 6        | 1        |
++----------+----------+
+Likes table:
++---------+---------+
+| user_id | page_id |
++---------+---------+
+| 1       | 88      |
+| 2       | 23      |
+| 3       | 24      |
+| 4       | 56      |
+| 5       | 11      |
+| 6       | 33      |
+| 2       | 77      |
+| 3       | 77      |
+| 6       | 88      |
++---------+---------+
+Output: 
++---------+---------+---------------+
+| user_id | page_id | friends_likes |
++---------+---------+---------------+
+| 1       | 77      | 2             |
+| 1       | 23      | 1             |
+| 1       | 24      | 1             |
+| 1       | 56      | 1             |
+| 1       | 33      | 1             |
+| 2       | 24      | 1             |
+| 2       | 56      | 1             |
+| 2       | 11      | 1             |
+| 2       | 88      | 1             |
+| 3       | 88      | 1             |
+| 3       | 23      | 1             |
+| 4       | 88      | 1             |
+| 4       | 77      | 1             |
+| 4       | 23      | 1             |
+| 5       | 77      | 1             |
+| 5       | 23      | 1             |
++---------+---------+---------------+
+Explanation: 
+Take user 1 as an example:
+  - User 1 is friends with users 2, 3, 4, and 6.
+  - Recommended pages are 23 (user 2 liked it), 24 (user 3 liked it), 56 (user 3 liked it), 33 (user 6 liked it), and 77 (user 2 and user 3 liked it).
+  - Note that page 88 is not recommended because user 1 already liked it.
+
+Another example is user 6:
+  - User 6 is friends with user 1.
+  - User 1 only liked page 88, but user 6 already liked it. Hence, user 6 has no recommendations.
+
+You can recommend pages for users 2, 3, 4, and 5 using a similar process.
+
+--solution
+with frnd(f1,f2) as (
+    select user1_id,user2_id from Friendship 
+    union
+    select user2_id,user1_id from Friendship 
+) select f1 user_id,page_id,count(page_id) friends_likes
+   from frnd f 
+    inner join Likes l on f.f2=l.user_id
+   where (f1,page_id) not in (select user_id,page_id from Likes)
+   group by f1,page_id
+
+71. https://leetcode.com/problems/leetcodify-similar-friends/ 
+
+Leetcodify Similar Friends
+
+SQL Schema
+Table: Listens
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| user_id     | int     |
+| song_id     | int     |
+| day         | date    |
++-------------+---------+
+There is no primary key for this table. It may contain duplicates.
+Each row of this table indicates that the user user_id listened to the song song_id on the day day.
+ 
+
+Table: Friendship
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| user1_id      | int     |
+| user2_id      | int     |
++---------------+---------+
+(user1_id, user2_id) is the primary key for this table.
+Each row of this table indicates that the users user1_id and user2_id are friends.
+Note that user1_id < user2_id.
+ 
+
+Write an SQL query to report the similar friends of Leetcodify users. A user x and user y are similar friends if:
+
+Users x and y are friends, and
+Users x and y listened to the same three or more different songs on the same day.
+Return the result table in any order. Note that you must return the similar pairs of friends the same way they were represented in the input (i.e., always user1_id < user2_id).
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Listens table:
++---------+---------+------------+
+| user_id | song_id | day        |
++---------+---------+------------+
+| 1       | 10      | 2021-03-15 |
+| 1       | 11      | 2021-03-15 |
+| 1       | 12      | 2021-03-15 |
+| 2       | 10      | 2021-03-15 |
+| 2       | 11      | 2021-03-15 |
+| 2       | 12      | 2021-03-15 |
+| 3       | 10      | 2021-03-15 |
+| 3       | 11      | 2021-03-15 |
+| 3       | 12      | 2021-03-15 |
+| 4       | 10      | 2021-03-15 |
+| 4       | 11      | 2021-03-15 |
+| 4       | 13      | 2021-03-15 |
+| 5       | 10      | 2021-03-16 |
+| 5       | 11      | 2021-03-16 |
+| 5       | 12      | 2021-03-16 |
++---------+---------+------------+
+Friendship table:
++----------+----------+
+| user1_id | user2_id |
++----------+----------+
+| 1        | 2        |
+| 2        | 4        |
+| 2        | 5        |
++----------+----------+
+Output: 
++----------+----------+
+| user1_id | user2_id |
++----------+----------+
+| 1        | 2        |
++----------+----------+
+Explanation: 
+Users 1 and 2 are friends, and they listened to songs 10, 11, and 12 on the same day. They are similar friends.
+Users 1 and 3 listened to songs 10, 11, and 12 on the same day, but they are not friends.
+Users 2 and 4 are friends, but they did not listen to the same three different songs.
+Users 2 and 5 are friends and listened to songs 10, 11, and 12, but they did not listen to them on the same day.
+
+--solution
+/* Write your PL/SQL query statement below */
+
+select 
+ distinct user1_id,user2_id
+from Friendship f
+ inner join Listens l1 on l1.user_id = f.user1_id
+ inner join Listens l2 on l2.user_id = f.user2_id
+where l1.song_id = l2.song_id and l1.day=l2.day
+group by user1_id,user2_id,l1.day
+having count(distinct l1.song_id) >= 3
+
+72. https://leetcode.com/problems/first-and-last-call-on-the-same-day/ 
+
+First and Last Call On the Same Day
+
+SQL Schema
+Table: Calls
+
++--------------+----------+
+| Column Name  | Type     |
++--------------+----------+
+| caller_id    | int      |
+| recipient_id | int      |
+| call_time    | datetime |
++--------------+----------+
+(caller_id, recipient_id, call_time) is the primary key for this table.
+Each row contains information about the time of a phone call between caller_id and recipient_id.
+ 
+
+Write an SQL query to report the IDs of the users whose first and last calls on any day were with the same person. Calls are counted regardless of being the caller or the recipient.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Calls table:
++-----------+--------------+---------------------+
+| caller_id | recipient_id | call_time           |
++-----------+--------------+---------------------+
+| 8         | 4            | 2021-08-24 17:46:07 |
+| 4         | 8            | 2021-08-24 19:57:13 |
+| 5         | 1            | 2021-08-11 05:28:44 |
+| 8         | 3            | 2021-08-17 04:04:15 |
+| 11        | 3            | 2021-08-17 13:07:00 |
+| 8         | 11           | 2021-08-17 22:22:22 |
++-----------+--------------+---------------------+
+Output: 
++---------+
+| user_id |
++---------+
+| 1       |
+| 4       |
+| 5       |
+| 8       |
++---------+
+Explanation: 
+On 2021-08-24, the first and last call of this day for user 8 was with user 4. User 8 should be included in the answer.
+Similarly, user 4 on 2021-08-24 had their first and last call with user 8. User 4 should be included in the answer.
+On 2021-08-11, user 1 and 5 had a call. This call was the only call for both of them on this day. Since this call is the first and last call of the day for both of them, they should both be included in the answer.
+
+--solution:
+/* Write your PL/SQL query statement below */
+with temp as ( -- both caller and recepient as users
+    select caller_id,recipient_id,call_time from calls 
+     union
+    select recipient_id,caller_id,call_time from calls 
+),
+temp2 as ( --first and last call of all the users call of the day
+    select caller_id,min(call_time) ft ,max(call_time) lt
+   from temp 
+  group by caller_id,to_char(call_time,'yyyy-mm-dd')
+) 
+,
+temp3 as ( --caller and recipient of all the first and last call of the day
+    select caller_id,recipient_id,call_time
+ from temp 
+ where (caller_id,call_time) in (select caller_id,ft from temp2)
+ 
+ union all
+ 
+ select caller_id ,recipient_id,call_time
+ from temp 
+ where (caller_id,call_time) in (select caller_id,lt from temp2)
+  ) --count number of distinct recipeint for one user per day that should be 1(same recipient) because now we have only two calls first and last at this point.
+  select distinct caller_id user_id
+   from temp3
+   group by caller_id,to_char(call_time,'yyyy-mm-dd')
+   having count(distinct recipient_id) = 1 
+
+
+73. https://leetcode.com/problems/the-number-of-seniors-and-juniors-to-join-the-company/ 
+The Number of Seniors and Juniors to Join the Company
+
+SQL Schema
+Table: Candidates
+
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| employee_id | int  |
+| experience  | enum |
+| salary      | int  |
++-------------+------+
+employee_id is the primary key column for this table.
+experience is an enum with one of the values ('Senior', 'Junior').
+Each row of this table indicates the id of a candidate, their monthly salary, and their experience.
+ 
+
+A company wants to hire new employees. The budget of the company for the salaries is $70000. The companys criteria for hiring are:
+
+Hiring the largest number of seniors.
+After hiring the maximum number of seniors, use the remaining budget to hire the largest number of juniors.
+Write an SQL query to find the number of seniors and juniors hired under the mentioned criteria.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Candidates table:
++-------------+------------+--------+
+| employee_id | experience | salary |
++-------------+------------+--------+
+| 1           | Junior     | 10000  |
+| 9           | Junior     | 10000  |
+| 2           | Senior     | 20000  |
+| 11          | Senior     | 20000  |
+| 13          | Senior     | 50000  |
+| 4           | Junior     | 40000  |
++-------------+------------+--------+
+Output: 
++------------+---------------------+
+| experience | accepted_candidates |
++------------+---------------------+
+| Senior     | 2                   |
+| Junior     | 2                   |
++------------+---------------------+
+Explanation: 
+We can hire 2 seniors with IDs (2, 11). Since the budget is $70000 and the sum of their salaries is $40000, we still have $30000 but they are not enough to hire the senior candidate with ID 13.
+We can hire 2 juniors with IDs (1, 9). Since the remaining budget is $30000 and the sum of their salaries is $20000, we still have $10000 but they are not enough to hire the junior candidate with ID 4.
+Example 2:
+
+Input: 
+Candidates table:
++-------------+------------+--------+
+| employee_id | experience | salary |
++-------------+------------+--------+
+| 1           | Junior     | 10000  |
+| 9           | Junior     | 10000  |
+| 2           | Senior     | 80000  |
+| 11          | Senior     | 80000  |
+| 13          | Senior     | 80000  |
+| 4           | Junior     | 40000  |
++-------------+------------+--------+
+Output: 
++------------+---------------------+
+| experience | accepted_candidates |
++------------+---------------------+
+| Senior     | 0                   |
+| Junior     | 3                   |
++------------+---------------------+
+Explanation: 
+We cannot hire any seniors with the current budget as we need at least $80000 to hire one senior.
+We can hire all three juniors with the remaining budget.
+
+--solution
+/* Write your PL/SQL query statement below */
+with S as (
+select experience,count(employee_id) ac ,max(total_sal) maxSal
+from ( 
+    select 
+        experience,employee_id,sum(salary) over(order by salary,employee_id) total_sal
+    from Candidates where experience = 'Senior'
+    union all
+    select 'Senior',NULL,0 from dual
+) where total_sal <=70000
+group by experience
+),
+J as (
+select T.experience,count(T.employee_id) accepted_candidates
+from ( 
+    select 
+        experience,employee_id,sum(salary) over(order by salary,employee_id) total_sal
+    from Candidates where experience = 'Junior'
+        union all
+    select 'Junior',NULL,0 from dual
+) T full outer join S on 1=1  
+where T.total_sal <= 70000 - S.maxSal
+group by T.experience )
+select experience,ac accepted_candidates from S
+union all
+select experience,accepted_candidates from J
+
+
+
+
+
