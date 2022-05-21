@@ -4986,3 +4986,78 @@ where T.total_sal <= 70000 - (select coalesce(max(total_sal),0) from S))
  select employee_id from S
  union all
  select employee_id from J
+
+ 75. 
+--find largest order by value for each person and order details 
+-- without subquery , cte , window function , temp table 
+
+drop table int_orders;
+CREATE TABLE int_orders(
+ order_number number NOT NULL,
+ order_date date NOT NULL,
+ cust_id number NOT NULL,
+ salesperson_id number NOT NULL,
+ amount number NOT NULL
+);
+
+alter session set NLS_DATE_FORMAT='yyyy-mm-dd';
+
+INSERT INTO int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (30, '1995-07-14', 9, 1, 460);
+
+INSERT into int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (10, '1996-08-02' , 4, 2, 540);
+
+INSERT INTO int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (40, '1998-01-29' , 7, 2, 2400);
+
+INSERT INTO int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (50, '1998-02-03' , 6, 7, 600);
+
+INSERT into int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (60, '1998-03-02' , 6, 7, 720);
+
+INSERT into int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (70, '1998-05-06' , 9, 7, 150);
+
+INSERT into int_orders (order_number, order_date, cust_id, salesperson_id, amount) VALUES (20, '1999-01-30' , 4, 8, 1800);
+
+commit;
+
+--solution
+--all largers except smallest 
+select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ from int_orders a
+ inner join int_orders b on a.salesperson_id=b.salesperson_id and a.amount >= b.amount
+ MINUS
+ --all smallers except largest
+ select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ from int_orders a
+ inner join int_orders b on a.salesperson_id=b.salesperson_id and a.amount < b.amount
+
+
+ORDER_NUMBER ORDER_DATE    CUST_ID SALESPERSON_ID     AMOUNT
+------------ ---------- ---------- -------------- ----------
+	  30 1995-07-14 	 9		1	 460
+	  20 1999-01-30 	 4		8	1800
+	  40 1998-01-29 	 7		2	2400
+	  60 1998-03-02 	 6		7	 720
+
+SQL>
+
+--solution2
+select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ from int_orders a
+ inner join int_orders b on a.salesperson_id=b.salesperson_id
+ group by a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ having(a.amount >= max(b.amount))
+
+ ORDER_NUMBER ORDER_DATE    CUST_ID SALESPERSON_ID     AMOUNT
+------------ ---------- ---------- -------------- ----------
+	  30 1995-07-14 	 9		1	 460
+	  40 1998-01-29 	 7		2	2400
+	  60 1998-03-02 	 6		7	 720
+	  20 1999-01-30 	 4		8	1800
+
+--solution3
+--solution2
+select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ from int_orders a
+ inner join int_orders b on a.salesperson_id=b.salesperson_id
+ group by a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ having(a.amount >= max(b.amount))
+
