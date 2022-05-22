@@ -5054,10 +5054,12 @@ select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
 	  20 1999-01-30 	 4		8	1800
 
 --solution3
---solution2
+--full table
 select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
  from int_orders a
- inner join int_orders b on a.salesperson_id=b.salesperson_id
- group by a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
- having(a.amount >= max(b.amount))
+ MINUS
+ --all smallers except largest
+ select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
+ from int_orders a
+ inner join int_orders b on a.salesperson_id=b.salesperson_id and a.amount < b.amount
 
