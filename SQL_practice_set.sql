@@ -5063,3 +5063,232 @@ select a.ORDER_NUMBER,a.ORDER_DATE,a.CUST_ID,a.SALESPERSON_ID,a.AMOUNT
  from int_orders a
  inner join int_orders b on a.salesperson_id=b.salesperson_id and a.amount < b.amount
 
+
+76. https://leetcode.com/problems/monthly-transactions-ii/ 
+
+ Monthly Transactions II
+
+Table: Transactions
+
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| id             | int     |
+| country        | varchar |
+| state          | enum    |
+| amount         | int     |
+| trans_date     | date    |
++----------------+---------+
+id is the primary key of this table.
+The table has information about incoming transactions.
+The state column is an enum of type ["approved", "declined"].
+Table: Chargebacks
+
++----------------+---------+
+| Column Name    | Type    |
++----------------+---------+
+| trans_id       | int     |
+| trans_date     | date    |
++----------------+---------+
+Chargebacks contains basic information regarding incoming chargebacks from some transactions placed in Transactions table.
+trans_id is a foreign key to the id column of Transactions table.
+Each chargeback corresponds to a transaction made previously even if they were not approved.
+ 
+
+Write an SQL query to find for each month and country: the number of approved transactions and their total amount, the number of chargebacks, and their total amount.
+
+Note: In your query, given the month and country, ignore rows with all zeros.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Transactions table:
++-----+---------+----------+--------+------------+
+| id  | country | state    | amount | trans_date |
++-----+---------+----------+--------+------------+
+| 101 | US      | approved | 1000   | 2019-05-18 |
+| 102 | US      | declined | 2000   | 2019-05-19 |
+| 103 | US      | approved | 3000   | 2019-06-10 |
+| 104 | US      | declined | 4000   | 2019-06-13 |
+| 105 | US      | approved | 5000   | 2019-06-15 |
++-----+---------+----------+--------+------------+
+Chargebacks table:
++----------+------------+
+| trans_id | trans_date |
++----------+------------+
+| 102      | 2019-05-29 |
+| 101      | 2019-06-30 |
+| 105      | 2019-09-18 |
++----------+------------+
+Output: 
++---------+---------+----------------+-----------------+------------------+-------------------+
+| month   | country | approved_count | approved_amount | chargeback_count | chargeback_amount |
++---------+---------+----------------+-----------------+------------------+-------------------+
+| 2019-05 | US      | 1              | 1000            | 1                | 2000              |
+| 2019-06 | US      | 2              | 8000            | 1                | 1000              |
+| 2019-09 | US      | 0              | 0               | 1                | 5000              |
++---------+---------+----------------+-----------------+------------------+-------------------+
+
+--solution
+/* Write your PL/SQL query statement below */
+
+with chargeback as (
+select to_char(c.trans_date,'yyyy-mm') cmonth,t.country,
+  sum(t.amount) c_amount,count(1) chargeback_count
+ from Chargebacks c 
+ inner join Transactions t on t.id=c.trans_id
+group by to_char(c.trans_date,'yyyy-mm'),t.country
+),--select * from chargeback
+txn as (
+    select to_char(t.trans_date,'yyyy-mm') tmonth,t.country,
+  sum(t.amount) approved_amount,count(1) approved_count 
+ from Transactions t
+ where state = 'approved'
+group by to_char(t.trans_date,'yyyy-mm'),t.country
+) 
+select coalesce(t.tmonth,c.cmonth) month,
+       coalesce(t.country,c.country) country,
+       coalesce(approved_count,0) approved_count,
+       coalesce(approved_amount,0) approved_amount,
+       coalesce(c.chargeback_count,0) chargeback_count,
+       coalesce(c.c_amount,0) chargeback_amount
+ from chargeback c 
+full outer join  txn t on t.tmonth = c.cmonth and t.country = c.country
+
+
+77. https://leetcode.com/problems/team-scores-in-football-tournament/ 
+
+Team Scores in Football Tournament
+
+Table: Teams
+
++---------------+----------+
+| Column Name   | Type     |
++---------------+----------+
+| team_id       | int      |
+| team_name     | varchar  |
++---------------+----------+
+team_id is the primary key of this table.
+Each row of this table represents a single football team.
+ 
+
+Table: Matches
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| match_id      | int     |
+| host_team     | int     |
+| guest_team    | int     | 
+| host_goals    | int     |
+| guest_goals   | int     |
++---------------+---------+
+match_id is the primary key of this table.
+Each row is a record of a finished match between two different teams. 
+Teams host_team and guest_team are represented by their IDs in the Teams table (team_id), and they scored host_goals and guest_goals goals, respectively.
+ 
+
+You would like to compute the scores of all teams after all matches. Points are awarded as follows:
+A team receives three points if they win a match (i.e., Scored more goals than the opponent team).
+A team receives one point if they draw a match (i.e., Scored the same number of goals as the opponent team).
+A team receives no points if they lose a match (i.e., Scored fewer goals than the opponent team).
+Write an SQL query that selects the team_id, team_name and num_points of each team in the tournament after all described matches.
+
+Return the result table ordered by num_points in decreasing order. In case of a tie, order the records by team_id in increasing order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Teams table:
++-----------+--------------+
+| team_id   | team_name    |
++-----------+--------------+
+| 10        | Leetcode FC  |
+| 20        | NewYork FC   |
+| 30        | Atlanta FC   |
+| 40        | Chicago FC   |
+| 50        | Toronto FC   |
++-----------+--------------+
+Matches table:
++------------+--------------+---------------+-------------+--------------+
+| match_id   | host_team    | guest_team    | host_goals  | guest_goals  |
++------------+--------------+---------------+-------------+--------------+
+| 1          | 10           | 20            | 3           | 0            |
+| 2          | 30           | 10            | 2           | 2            |
+| 3          | 10           | 50            | 5           | 1            |
+| 4          | 20           | 30            | 1           | 0            |
+| 5          | 50           | 30            | 1           | 0            |
++------------+--------------+---------------+-------------+--------------+
+Output: 
++------------+--------------+---------------+
+| team_id    | team_name    | num_points    |
++------------+--------------+---------------+
+| 10         | Leetcode FC  | 7             |
+| 20         | NewYork FC   | 3             |
+| 50         | Toronto FC   | 3             |
+| 30         | Atlanta FC   | 1             |
+| 40         | Chicago FC   | 0             |
++------------+--------------+---------------+
+
+--solution
+with temp as (
+select
+ host_team team_id,3 pnts
+from Matches where host_goals > guest_goals
+union all
+select
+ guest_team,3 pnts
+from Matches where host_goals < guest_goals
+union all
+select
+ guest_team,1 pnts
+from Matches where host_goals=guest_goals
+union all
+select
+ host_team,1 pnts
+from Matches where host_goals=guest_goals
+) select Teams.team_id team_id,team_name,sum(coalesce(pnts,0)) num_points
+  from Teams left join 
+   temp on Teams.team_id = temp.team_id
+ group by Teams.team_id,team_name
+ order by num_points desc,Teams.team_id
+
+--solution 2
+/* Write your PL/SQL query statement below */
+
+with temp as (
+select
+ host_team team_id,
+ case 
+    when host_goals > guest_goals then 3
+   when host_goals < guest_goals then 0
+   else 1
+ end as pnts
+from Matches
+union all
+select
+ guest_team team_id,
+ case 
+    when host_goals < guest_goals then 3
+    when host_goals > guest_goals then 0
+    else 1 
+ end as pnts
+from Matches
+) --select * from temp
+select Teams.team_id team_id,team_name,sum(coalesce(pnts,0)) num_points
+  from Teams left join 
+   temp on Teams.team_id = temp.team_id
+ group by Teams.team_id,team_name
+ order by num_points desc,Teams.team_id
+
+ 
