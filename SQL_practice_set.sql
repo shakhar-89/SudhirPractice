@@ -5291,4 +5291,535 @@ select Teams.team_id team_id,team_name,sum(coalesce(pnts,0)) num_points
  group by Teams.team_id,team_name
  order by num_points desc,Teams.team_id
 
+78. https://leetcode.com/problems/all-people-report-to-the-given-manager/ 
+
+All People Report to the Given Manager
+
+Table: Employees
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| employee_id   | int     |
+| employee_name | varchar |
+| manager_id    | int     |
++---------------+---------+
+employee_id is the primary key for this table.
+Each row of this table indicates that the employee with ID employee_id and name employee_name reports his work to his/her direct manager with manager_id
+The head of the company is the employee with employee_id = 1.
  
+
+Write an SQL query to find employee_id of all employees that directly or indirectly report their work to the head of the company.
+
+The indirect relation between managers will not exceed three managers as the company is small.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Employees table:
++-------------+---------------+------------+
+| employee_id | employee_name | manager_id |
++-------------+---------------+------------+
+| 1           | Boss          | 1          |
+| 3           | Alice         | 3          |
+| 2           | Bob           | 1          |
+| 4           | Daniel        | 2          |
+| 7           | Luis          | 4          |
+| 8           | Jhon          | 3          |
+| 9           | Angela        | 8          |
+| 77          | Robert        | 1          |
++-------------+---------------+------------+
+Output: 
++-------------+
+| employee_id |
++-------------+
+| 2           |
+| 77          |
+| 4           |
+| 7           |
++-------------+
+Explanation: 
+The head of the company is the employee with employee_id 1.
+The employees with employee_id 2 and 77 report their work directly to the head of the company.
+The employee with employee_id 4 reports their work indirectly to the head of the company 4 --> 2 --> 1. 
+The employee with employee_id 7 reports their work indirectly to the head of the company 7 --> 4 --> 2 --> 1.
+The employees with employee_id 3, 8, and 9 do not report their work to the head of the company directly or indirectly. 
+
+--solution
+/* Write your PL/SQL query statement below */
+with temp(employee_id) as (
+select employee_id
+ from Employees 
+ where manager_id =1 and employee_id <> 1
+ union all
+  select Employees.employee_id
+    from Employees inner join temp
+    on Employees.manager_id = temp.employee_id
+) select * from temp
+
+
+79. https://leetcode.com/problems/restaurant-growth/ 
+Restaurant Growth
+
+Table: Customer
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| customer_id   | int     |
+| name          | varchar |
+| visited_on    | date    |
+| amount        | int     |
++---------------+---------+
+(customer_id, visited_on) is the primary key for this table.
+This table contains data about customer transactions in a restaurant.
+visited_on is the date on which the customer with ID (customer_id) has visited the restaurant.
+amount is the total paid by a customer.
+ 
+
+You are the restaurant owner and you want to analyze a possible expansion (there will be at least one customer every day).
+
+Write an SQL query to compute the moving average of how much the customer paid in a seven days window (i.e., current day + 6 days before). average_amount should be rounded to two decimal places.
+
+Return result table ordered by visited_on in ascending order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Customer table:
++-------------+--------------+--------------+-------------+
+| customer_id | name         | visited_on   | amount      |
++-------------+--------------+--------------+-------------+
+| 1           | Jhon         | 2019-01-01   | 100         |
+| 2           | Daniel       | 2019-01-02   | 110         |
+| 3           | Jade         | 2019-01-03   | 120         |
+| 4           | Khaled       | 2019-01-04   | 130         |
+| 5           | Winston      | 2019-01-05   | 110         | 
+| 6           | Elvis        | 2019-01-06   | 140         | 
+| 7           | Anna         | 2019-01-07   | 150         |
+| 8           | Maria        | 2019-01-08   | 80          |
+| 9           | Jaze         | 2019-01-09   | 110         | 
+| 1           | Jhon         | 2019-01-10   | 130         | 
+| 3           | Jade         | 2019-01-10   | 150         | 
++-------------+--------------+--------------+-------------+
+Output: 
++--------------+--------------+----------------+
+| visited_on   | amount       | average_amount |
++--------------+--------------+----------------+
+| 2019-01-07   | 860          | 122.86         |
+| 2019-01-08   | 840          | 120            |
+| 2019-01-09   | 840          | 120            |
+| 2019-01-10   | 1000         | 142.86         |
++--------------+--------------+----------------+
+Explanation: 
+1st moving average from 2019-01-01 to 2019-01-07 has an average_amount of (100 + 110 + 120 + 130 + 110 + 140 + 150)/7 = 122.86
+2nd moving average from 2019-01-02 to 2019-01-08 has an average_amount of (110 + 120 + 130 + 110 + 140 + 150 + 80)/7 = 120
+3rd moving average from 2019-01-03 to 2019-01-09 has an average_amount of (120 + 130 + 110 + 140 + 150 + 80 + 110)/7 = 120
+4th moving average from 2019-01-04 to 2019-01-10 has an average_amount of (130 + 110 + 140 + 150 + 80 + 110 + 130 + 150)/7 = 142.86
+
+--solution
+/* Write your PL/SQL query statement below */
+with dates as (
+    select visited_on,
+        lag(visited_on,6) over(order by visited_on) visted_6
+    from ( select distinct visited_on from Customer)
+) --select * from dates
+select to_char(d.visited_on,'yyyy-mm-dd') visited_on,
+          sum(amount) amount,
+          round(sum(amount) / 7,2)  average_amount
+    from Customer c
+  inner join dates d on c.visited_on between d.visted_6 and d.visited_on
+  group by d.visited_on
+  order by d.visited_on
+
+80. https://leetcode.com/problems/active-users/ 
+
+Active Users
+
+Table: Accounts
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| name          | varchar |
++---------------+---------+
+id is the primary key for this table.
+This table contains the account id and the user name of each account.
+ 
+
+Table: Logins
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| login_date    | date    |
++---------------+---------+
+There is no primary key for this table, it may contain duplicates.
+This table contains the account id of the user who logged in and the login date. A user may log in multiple times in the day.
+ 
+
+Active users are those who logged in to their accounts for five or more consecutive days.
+
+Write an SQL query to find the id and the name of active users.
+
+Return the result table ordered by id.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Accounts table:
++----+----------+
+| id | name     |
++----+----------+
+| 1  | Winston  |
+| 7  | Jonathan |
++----+----------+
+Logins table:
++----+------------+
+| id | login_date |
++----+------------+
+| 7  | 2020-05-30 |
+| 1  | 2020-05-30 |
+| 7  | 2020-05-31 |
+| 7  | 2020-06-01 |
+| 7  | 2020-06-02 |
+| 7  | 2020-06-02 |
+| 7  | 2020-06-03 |
+| 1  | 2020-06-07 |
+| 7  | 2020-06-10 |
++----+------------+
+Output: 
++----+----------+
+| id | name     |
++----+----------+
+| 7  | Jonathan |
++----+----------+
+Explanation: 
+User Winston with id = 1 logged in 2 times only in 2 different days, so, Winston is not an active user.
+User Jonathan with id = 7 logged in 7 times in 6 different days, five of them were consecutive days, so, Jonathan is an active user.
+ 
+
+Follow up: Could you write a general solution if the active users are those who logged in to their accounts for n or more consecutive days?
+
+--solution
+/* Write your PL/SQL query statement below */
+
+with temp as (
+select 
+ id,
+ login_date,
+ login_date - dense_rank() over(partition by id order by login_date) flag 
+from ( select distinct id,login_date from Logins)
+) select distinct t.id,name
+  from temp t inner join Accounts a on t.id = a.id
+ group by t.id,flag,name
+ having (count(1)>=5)
+ order by t.id
+ 
+ 81. https://leetcode.com/problems/customers-who-bought-products-a-and-b-but-not-c/ 
+Customers Who Bought Products A and B but Not C
+
+Table: Customers
+
++---------------------+---------+
+| Column Name         | Type    |
++---------------------+---------+
+| customer_id         | int     |
+| customer_name       | varchar |
++---------------------+---------+
+customer_id is the primary key for this table.
+customer_name is the name of the customer.
+ 
+
+Table: Orders
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| order_id      | int     |
+| customer_id   | int     |
+| product_name  | varchar |
++---------------+---------+
+order_id is the primary key for this table.
+customer_id is the id of the customer who bought the product "product_name".
+ 
+
+Write an SQL query to report the customer_id and customer_name of customers who bought products "A", "B" but did not buy the product "C" since we want to recommend them to purchase this product.
+
+Return the result table ordered by customer_id.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Customers table:
++-------------+---------------+
+| customer_id | customer_name |
++-------------+---------------+
+| 1           | Daniel        |
+| 2           | Diana         |
+| 3           | Elizabeth     |
+| 4           | Jhon          |
++-------------+---------------+
+Orders table:
++------------+--------------+---------------+
+| order_id   | customer_id  | product_name  |
++------------+--------------+---------------+
+| 10         |     1        |     A         |
+| 20         |     1        |     B         |
+| 30         |     1        |     D         |
+| 40         |     1        |     C         |
+| 50         |     2        |     A         |
+| 60         |     3        |     A         |
+| 70         |     3        |     B         |
+| 80         |     3        |     D         |
+| 90         |     4        |     C         |
++------------+--------------+---------------+
+Output: 
++-------------+---------------+
+| customer_id | customer_name |
++-------------+---------------+
+| 3           | Elizabeth     |
++-------------+---------------+
+Explanation: Only the customer_id with id 3 bought the product A and B but not the product C.
+
+--solution
+/* Write your PL/SQL query statement below */
+select Orders.customer_id,customer_name
+ from Orders 
+  inner join Customers on Orders.customer_id = Customers.customer_id
+ where product_name in ('A','B')
+  and not exists (
+      select 1 from Orders o 
+       where o.customer_id = Orders.customer_id
+       and product_name = 'C'
+  )
+group by Orders.customer_id,customer_name
+having count (distinct product_name) =2
+
+82. https://leetcode.com/problems/evaluate-boolean-expression/ 
+
+Evaluate Boolean Expression
+
+Table Variables:
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| name          | varchar |
+| value         | int     |
++---------------+---------+
+name is the primary key for this table.
+This table contains the stored variables and their values.
+ 
+
+Table Expressions:
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| left_operand  | varchar |
+| operator      | enum    |
+| right_operand | varchar |
++---------------+---------+
+(left_operand, operator, right_operand) is the primary key for this table.
+This table contains a boolean expression that should be evaluated.
+operator is an enum that takes one of the values ('<', '>', '=')
+The values of left_operand and right_operand are guaranteed to be in the Variables table.
+ 
+
+Write an SQL query to evaluate the boolean expressions in Expressions table.
+
+Return the result table in any order.
+
+The query result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Variables table:
++------+-------+
+| name | value |
++------+-------+
+| x    | 66    |
+| y    | 77    |
++------+-------+
+Expressions table:
++--------------+----------+---------------+
+| left_operand | operator | right_operand |
++--------------+----------+---------------+
+| x            | >        | y             |
+| x            | <        | y             |
+| x            | =        | y             |
+| y            | >        | x             |
+| y            | <        | x             |
+| x            | =        | x             |
++--------------+----------+---------------+
+Output: 
++--------------+----------+---------------+-------+
+| left_operand | operator | right_operand | value |
++--------------+----------+---------------+-------+
+| x            | >        | y             | false |
+| x            | <        | y             | true  |
+| x            | =        | y             | false |
+| y            | >        | x             | true  |
+| y            | <        | x             | false |
+| x            | =        | x             | true  |
++--------------+----------+---------------+-------+
+Explanation: 
+As shown, you need to find the value of each boolean expression in the table using the variables table.
+
+--solution
+# Write your MySQL query statement below
+select 
+ left_operand,operator,right_operand,
+  case 
+    when operator=">" and v1.value > v2.value then 'true'
+    when operator="<" and v1.value < v2.value then 'true'
+    when operator="=" and v1.value = v2.value then 'true' else 'false' 
+  end as value
+from Expressions e
+ inner join Variables v1 on e.left_operand = v1.name
+ inner join Variables v2 on e.right_operand = v2.name
+
+83. https://leetcode.com/problems/rectangles-area/ 
+
+Rectangles Area
+
+SQL Schema
+Table: Points
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| id            | int     |
+| x_value       | int     |
+| y_value       | int     |
++---------------+---------+
+id is the primary key for this table.
+Each point is represented as a 2D coordinate (x_value, y_value).
+ 
+
+Write an SQL query to report all possible axis-aligned rectangles with a non-zero area that can be formed by any two points from the Points table.
+
+Each row in the result should contain three columns (p1, p2, area) where:
+
+p1 and p2 are the ids of the two points that determine the opposite corners of a rectangle.
+area is the area of the rectangle and must be non-zero.
+Return the result table ordered by area in descending order. If there is a tie, order them by p1 in ascending order. If there is still a tie, order them by p2 in ascending order.
+
+The query result format is in the following table.
+
+ 
+
+Example 1:
+
+
+Input: 
+Points table:
++----------+-------------+-------------+
+| id       | x_value     | y_value     |
++----------+-------------+-------------+
+| 1        | 2           | 7           |
+| 2        | 4           | 8           |
+| 3        | 2           | 10          |
++----------+-------------+-------------+
+Output: 
++----------+-------------+-------------+
+| p1       | p2          | area        |
++----------+-------------+-------------+
+| 2        | 3           | 4           |
+| 1        | 2           | 2           |
++----------+-------------+-------------+
+Explanation: 
+The rectangle formed by p1 = 2 and p2 = 3 has an area equal to |4-2| * |8-10| = 4.
+The rectangle formed by p1 = 1 and p2 = 2 has an area equal to |2-4| * |7-8| = 2.
+Note that the rectangle formed by p1 = 1 and p2 = 3 is invalid because the area is 0.
+
+--solution
+# Write your MySQL query statement below
+SELECT
+a.id AS P1,
+b.id AS P2,
+abs(a.x_value-b.x_value) * abs(a.y_value - b.y_value) AS AREA
+FROM
+Points a, Points b
+WHERE a.id <> b.id
+HAVING 
+AREA<>0 AND P1<P2
+ORDER BY AREA DESC, P1 ASC, P2 ASC
+
+
+84. 
+drop table event_status;
+create table event_status
+(
+event_time varchar(10),
+status varchar(10)
+);
+insert into event_status 
+values
+('10:01','on'),('10:02','on'),('10:03','on'),('10:04','off'),('10:07','on'),('10:08','on'),('10:09','off')
+,('10:11','on'),('10:12','off');
+
+--input 
+EVENT_TIME STATUS
+---------- ----------
+10:01	   on
+10:02	   on
+10:03	   on
+10:04	   off
+10:07	   on
+10:08	   on
+10:09	   off
+10:11	   on
+10:12	   off
+
+--solution
+with temp as ( --calculate current and previous state
+select EVENT_TIME,STATUS,coalesce(lag(STATUS) over(order by EVENT_TIME),'XX') prev_status
+ from event_status 
+), 
+temp1 as ( select EVENT_TIME,STATUS,prev_status,
+     -- set flag to 1 when status changes from off to on only  
+    case when prev_status='off' and STATUS='on' then 1 else 0 end flag
+  from temp 
+),
+temp2 as (
+select EVENT_TIME,STATUS,
+  sum(flag) over( order by EVENT_TIME) flag1 -- every change in state will get new number
+ from temp1 order by EVENT_TIME
+)
+select min(EVENT_TIME) login,max(EVENT_TIME) logout,
+     sum(case when upper(STATUS)='ON' then 1 else 0 end) cnt
+    from temp2 
+  group by flag1 
+
+LOGIN	   LOGOUT	     CNT
+---------- ---------- ----------
+10:01	   10:04	       3
+10:07	   10:09	       2
+10:11	   10:12	       1
+
+SQL>
